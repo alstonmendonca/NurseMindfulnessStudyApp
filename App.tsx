@@ -1,3 +1,4 @@
+import 'react-native-get-random-values';
 import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -9,6 +10,7 @@ import { OnboardingNavigator } from './src/navigation/OnboardingNavigator';
 import { MainNavigator } from './src/navigation/MainNavigator';
 import { ParticipantProvider } from './src/contexts/ParticipantContext';
 import { SharedProvider } from './src/contexts/SharedContext';
+
 
 // Configure notifications
 Notifications.setNotificationHandler({
