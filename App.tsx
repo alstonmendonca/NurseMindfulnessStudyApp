@@ -3,12 +3,13 @@ import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
-import { useParticipant } from './src/contexts/ParticipantContext';
+import { useAuth } from './src/contexts/AuthContext';
 import * as Notifications from 'expo-notifications';
 import { RootStackParamList } from './src/navigation/types';
 import { OnboardingNavigator } from './src/navigation/OnboardingNavigator';
 import { MainNavigator } from './src/navigation/MainNavigator';
 import { ParticipantProvider } from './src/contexts/ParticipantContext';
+import { AuthProvider } from './src/contexts/AuthContext';
 import { SharedProvider } from './src/contexts/SharedContext';
 
 
@@ -45,34 +46,31 @@ export default function App() {
   }, []);
 
   return (
-    <ParticipantProvider>
-      <SharedProvider>
-        <NavigationContainer>
-          <AppNavigator />
-          <StatusBar style="auto" />
-        </NavigationContainer>
-      </SharedProvider>
-    </ParticipantProvider>
+    <AuthProvider>
+      <ParticipantProvider>
+        <SharedProvider>
+          <NavigationContainer>
+            <AppNavigator />
+            <StatusBar style="auto" />
+          </NavigationContainer>
+        </SharedProvider>
+      </ParticipantProvider>
+    </AuthProvider>
   );
 }
 
 // Separate navigator component to use hooks after providers are mounted
 function AppNavigator() {
-  const { hasCompletedOnboarding } = useParticipant();
+  const { participantNumber, completedOnboarding } = useAuth();
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {!hasCompletedOnboarding ? (
-        <Stack.Screen 
-          name="Onboarding"
-          component={OnboardingNavigator}
-          options={{ gestureEnabled: false }}
-        />
+      {!participantNumber ? (
+        <Stack.Screen name="Login" component={require('./src/screens/LoginScreen').LoginScreen} />
+      ) : !completedOnboarding ? (
+        <Stack.Screen name="Onboarding" component={OnboardingNavigator} options={{ gestureEnabled: false }} />
       ) : (
-        <Stack.Screen 
-          name="Main"
-          component={MainNavigator}
-        />
+        <Stack.Screen name="Main" component={MainNavigator} />
       )}
     </Stack.Navigator>
   );

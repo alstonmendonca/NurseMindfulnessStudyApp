@@ -3,7 +3,7 @@ import { StyleSheet, View, SafeAreaView, Text, ScrollView } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../navigation/types';
 import { PrimaryButton } from '../components/PrimaryButton';
-import { useParticipant } from '../contexts/ParticipantContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useShared } from '../contexts/SharedContext';
 import { supabase } from '../utils/supabase';
 
@@ -37,7 +37,7 @@ const feelingTags = [
 ];
 
 export const DailyCheckInScreen: React.FC<Props> = ({ navigation }) => {
-  const { participantId } = useParticipant();
+  const { participantNumber } = useAuth();
   const { currentShift } = useShared();
   const [moodScore, setMoodScore] = useState<number | null>(null);
   const [stressLevel, setStressLevel] = useState<number | null>(null);
@@ -45,11 +45,11 @@ export const DailyCheckInScreen: React.FC<Props> = ({ navigation }) => {
   const [note, setNote] = useState('');
 
   const handleSubmit = async () => {
-    if (!participantId || moodScore === null || stressLevel === null) return;
+  if (!participantNumber || moodScore === null || stressLevel === null) return;
 
     try {
       const { error } = await supabase.from('mood_checks').insert({
-        participant_id: participantId,
+        participant_id: participantNumber,
         mood_score: moodScore + 1, // Convert 0-4 to 1-5
         stress_level: stressLevel + 1,
         feelings: selectedFeelings,
