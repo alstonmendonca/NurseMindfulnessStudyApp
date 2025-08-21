@@ -9,11 +9,10 @@ import { useParticipant } from '../contexts/ParticipantContext';
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'WhatToExpect'>;
 
 export const WhatToExpectScreen: React.FC<Props> = ({ navigation, route }) => {
-  const { studyGroup } = route.params;
+  const { studyGroup, department } = route.params;
   const { scheduleNextNotification } = useNotifications();
   const { setParticipantData, setOnboardingComplete } = useParticipant();
   const [isLoading, setIsLoading] = useState(false);
-  const [department, setDepartment] = useState<Department>('ICU'); // TODO: Get from previous screen
 
   const description = studyGroup === 'control'
     ? "You'll be helping us understand nurses' well-being through regular check-ins. This includes:\n\n• Weekly research surveys\n• Optional daily mood & stress check-ins"
@@ -23,7 +22,7 @@ export const WhatToExpectScreen: React.FC<Props> = ({ navigation, route }) => {
     setIsLoading(true);
     try {
       // Save the study group assignment
-      await setParticipantData({ studyGroup, department });
+  await setParticipantData({ studyGroup, department });
 
       // Schedule initial notifications
       await scheduleNextNotification('daily-checkin');
@@ -34,14 +33,16 @@ export const WhatToExpectScreen: React.FC<Props> = ({ navigation, route }) => {
       }
 
       // Mark onboarding as complete
-      await setOnboardingComplete();
+  await setOnboardingComplete();
+  // Navigation will be handled automatically by App.tsx
     } catch (error) {
       Alert.alert(
         'Error',
         'There was a problem setting up your notifications. You can enable them later in settings.',
       );
-      // Still complete onboarding
-      await setOnboardingComplete();
+  // Still complete onboarding
+  await setOnboardingComplete();
+  // Navigation will be handled automatically by App.tsx
     } finally {
       setIsLoading(false);
     }

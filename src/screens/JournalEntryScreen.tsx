@@ -4,15 +4,16 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../navigation/types';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { journalTags } from '../constants/journalTags';
-import { useParticipant } from '../contexts/ParticipantContext';
+// Removed useParticipant, now using useAuth
 import { useShared } from '../contexts/SharedContext';
+import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../utils/supabase';
 
 type Props = NativeStackScreenProps<MainStackParamList, 'JournalEntry'>;
 
 export const JournalEntryScreen: React.FC<Props> = ({ navigation, route }) => {
   const { prompt } = route.params ?? {};
-  const { participantId } = useParticipant();
+  const { participantNumber } = useAuth();
   const { currentShift } = useShared();
   const [content, setContent] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -27,14 +28,14 @@ export const JournalEntryScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   const handleSave = async () => {
-    if (!content.trim() || !participantId) return;
+    if (!content.trim() || !participantNumber) return;
 
     setIsSaving(true);
     try {
       const { error } = await supabase
         .from('journal_entries')
         .insert({
-          participant_id: participantId,
+          participant_id: participantNumber,
           content: content.trim(),
           prompt: prompt || '',
           tags: selectedTags,
@@ -42,7 +43,6 @@ export const JournalEntryScreen: React.FC<Props> = ({ navigation, route }) => {
         });
 
       if (error) throw error;
-      
       navigation.goBack();
     } catch (error) {
       console.error('Error saving journal entry:', error);

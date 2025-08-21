@@ -10,9 +10,9 @@ const departments: Department[] = ['ICU', 'ER', 'Pediatrics', 'In-Patient', 'Out
 
 export const DepartmentSelectScreen: React.FC<Props> = ({ navigation }) => {
   // In a real app, we would randomly assign the study group
-  const assignStudyGroup = (department: Department) => {
+  const assignStudyGroup = (selectedDepartment: Department) => {
     const studyGroup = Math.random() < 0.5 ? 'control' : 'intervention';
-    navigation.navigate('WhatToExpect', { studyGroup });
+    navigation.navigate('WhatToExpect', { studyGroup, department: selectedDepartment });
   };
 
   return (

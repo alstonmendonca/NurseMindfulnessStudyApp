@@ -4,7 +4,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../navigation/types';
 import { SurveyQuestion } from '../components/SurveyQuestion';
 import { PrimaryButton } from '../components/PrimaryButton';
-import { useParticipant } from '../contexts/ParticipantContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useShared } from '../contexts/SharedContext';
 import { supabase } from '../utils/supabase';
 import { PSS4_QUESTIONS, COPE_QUESTIONS, WHO5_QUESTIONS } from '../constants/surveyQuestions';
@@ -13,7 +13,7 @@ type Props = NativeStackScreenProps<MainStackParamList, 'ResearchCheckIn'>;
 
 export const ResearchCheckInScreen: React.FC<Props> = ({ navigation, route }) => {
   const { type } = route.params;
-  const { participantId } = useParticipant();
+  const { participantNumber } = useAuth();
   const { currentShift, requireShift } = useShared();
   const [responses, setResponses] = useState<Record<string, number>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,14 +49,14 @@ export const ResearchCheckInScreen: React.FC<Props> = ({ navigation, route }) =>
   };
 
   const handleSubmit = async () => {
-    if (!isComplete() || !participantId || !currentShift) return;
+    if (!isComplete() || !participantNumber || !currentShift) return;
 
     setIsSubmitting(true);
     try {
       const { error } = await supabase
         .from('research_check_ins')
         .insert({
-          participant_id: participantId,
+          participant_id: participantNumber,
           check_in_type: type,
           responses,
           shift: currentShift,
