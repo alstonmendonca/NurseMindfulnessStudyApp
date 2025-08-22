@@ -99,48 +99,67 @@ export const scheduleResearchCheckIn = async (type: 'pss4' | 'cope' | 'who5', in
   const nextDate = getNextTriggerDate(9); // 9 AM
   nextDate.setDate(nextDate.getDate() + intervalDays - 1);
 
-  await Notifications.scheduleNotificationAsync({
-    content: NOTIFICATION_CONTENT[type],
-    trigger: {
-      type: 'calendar',
-      hour: 9,
-      minute: 0,
-      repeats: false,
-    } as any,
-  });
+  const seconds = Math.floor((nextDate.getTime() - Date.now()) / 1000);
+  if (seconds > 0) {
+    await Notifications.scheduleNotificationAsync({
+      content: NOTIFICATION_CONTENT[type],
+      trigger: {
+        seconds,
+      } as Notifications.NotificationTriggerInput,
+    });
+  }
 };
 
 export const scheduleDailyCheckInReminder = async () => {
-  const identifier = await Notifications.scheduleNotificationAsync({
-    content: NOTIFICATION_CONTENT['daily-checkin'],
-    trigger: {
-      type: 'calendar',
-      hour: 10, // 10 AM
-      minute: 0,
-      repeats: true,
-    } as any,
+  const nextTime = getNextTriggerDate(10); // 10 AM
+
+  // Schedule for the next 30 days since Android doesn't support indefinite repeating
+  const notifications = Array.from({ length: 30 }, (_, i) => {
+    const date = new Date(nextTime);
+    date.setDate(date.getDate() + i);
+    const seconds = Math.floor((date.getTime() - Date.now()) / 1000);
+    
+    if (seconds > 0) {
+      return Notifications.scheduleNotificationAsync({
+        content: NOTIFICATION_CONTENT['daily-checkin'],
+        trigger: {
+          seconds,
+        } as Notifications.NotificationTriggerInput,
+      });
+    }
+    return Promise.resolve();
   });
 
-  return identifier;
+  await Promise.all(notifications.filter(Boolean));
+  return 'daily-checkin';
 };
 
 export const scheduleMotivationalQuote = async () => {
   const quoteIndex = Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length);
+  const nextTime = getNextTriggerDate(8); // 8 AM
   
-  const identifier = await Notifications.scheduleNotificationAsync({
-    content: {
-      ...NOTIFICATION_CONTENT['motivation'],
-      body: MOTIVATIONAL_QUOTES[quoteIndex],
-    },
-    trigger: {
-      type: 'calendar',
-      hour: 8, // 8 AM
-      minute: 0,
-      repeats: true,
-    } as any,
+  // Schedule for the next 30 days since Android doesn't support indefinite repeating
+  const notifications = Array.from({ length: 30 }, (_, i) => {
+    const date = new Date(nextTime);
+    date.setDate(date.getDate() + i);
+    const seconds = Math.floor((date.getTime() - Date.now()) / 1000);
+
+    if (seconds > 0) {
+      return Notifications.scheduleNotificationAsync({
+        content: {
+          ...NOTIFICATION_CONTENT['motivation'],
+          body: MOTIVATIONAL_QUOTES[(quoteIndex + i) % MOTIVATIONAL_QUOTES.length],
+        },
+        trigger: {
+          seconds,
+        } as Notifications.NotificationTriggerInput,
+      });
+    }
+    return Promise.resolve();
   });
 
-  return identifier;
+  await Promise.all(notifications.filter(Boolean));
+  return 'motivation';
 // Removed stray closing braces
 };
 

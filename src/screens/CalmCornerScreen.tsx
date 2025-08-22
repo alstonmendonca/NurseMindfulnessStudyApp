@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, SafeAreaView, Text, ScrollView } from 'react-native';
+import { theme } from '../constants/theme';
+import { Screen } from '../components/Screen';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../navigation/types';
 import { PrimaryButton } from '../components/PrimaryButton';
@@ -165,7 +167,7 @@ export const CalmCornerScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <Screen title="Calm Corner">
       <ScrollView style={styles.scrollView}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Guided Breathing</Text>
@@ -240,14 +242,14 @@ export const CalmCornerScreen: React.FC<Props> = ({ navigation }) => {
           <GratitudeLog />
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background,
   },
   scrollView: {
     flex: 1,
@@ -255,12 +257,13 @@ const styles = StyleSheet.create({
   section: {
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: theme.colors.border,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 20,
+    color: theme.colors.text,
   },
   breathingContainer: {
     alignItems: 'center',
@@ -271,7 +274,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginVertical: 40,
-    color: '#4A90E2',
+    color: theme.colors.text,
   },
   durationButtons: {
     flexDirection: 'row',

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, SafeAreaView, Text, TextInput, Alert } from 'react-native';
+import { StyleSheet, View, Text, TextInput, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { theme } from '../constants/theme';
+import { Screen } from '../components/Screen';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { OnboardingStackParamList } from '../navigation/types';
 import { PrimaryButton } from '../components/PrimaryButton';
@@ -31,79 +33,152 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Welcome to Shanthi</Text>
-        <Text style={styles.subtitle}>
-          Please enter your participant number and password to continue
-        </Text>
+    <Screen>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardAvoid}
+      >
+        <View style={styles.container}>
+          {/* Header Section */}
+          <View style={styles.header}>
+            <Text style={styles.title}>Welcome to Shanthi</Text>
+            <Text style={styles.subtitle}>
+              Your personal companion for peace, mindfulness, and well-being
+            </Text>
+          </View>
 
-        <View style={styles.form}>
-          <TextInput
-            style={styles.input}
-            value={participantNumber}
-            onChangeText={setParticipantNumber}
-            placeholder="Participant Number"
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="number-pad"
-          />
+          {/* Form Section */}
+          <View style={styles.formContainer}>
+            <View style={styles.form}>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Participant Number</Text>
+                <TextInput
+                  style={styles.input}
+                  value={participantNumber}
+                  onChangeText={setParticipantNumber}
+                  placeholder="Enter your participant number"
+                  placeholderTextColor={theme.colors.mutedText}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="number-pad"
+                />
+              </View>
 
-          <TextInput
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Password"
-            secureTextEntry
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Password</Text>
+                <TextInput
+                  style={styles.input}
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Enter your password"
+                  placeholderTextColor={theme.colors.mutedText}
+                  secureTextEntry
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
 
-          <PrimaryButton
-            label={isLoading ? "Logging in..." : "Log In"}
-            onPress={handleLogin}
-            disabled={isLoading}
-            style={styles.loginButton}
-          />
+              <PrimaryButton
+                label={isLoading ? "Signing In..." : "Sign In"}
+                onPress={handleLogin}
+                disabled={isLoading}
+                style={styles.loginButton}
+              />
+            </View>
+          </View>
+
+          {/* Footer Section */}
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>
+              This app is part of a research study to support nurses' mental health
+            </Text>
+          </View>
         </View>
-      </View>
-    </SafeAreaView>
+      </KeyboardAvoidingView>
+    </Screen>
   );
 };
 
 const styles = StyleSheet.create({
+  keyboardAvoid: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing.xl,
   },
-  content: {
-    flex: 1,
-    padding: 20,
-    justifyContent: 'center',
+  header: {
+    alignItems: 'center',
+    paddingTop: theme.spacing.xxl,
+    paddingBottom: theme.spacing.xl,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 32,
+    fontFamily: theme.typography.fontFamily.bold,
+    color: theme.colors.text,
     textAlign: 'center',
-    marginBottom: 10,
+    marginBottom: theme.spacing.md,
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: theme.typography.subtitle,
+    fontFamily: theme.typography.fontFamily.regular,
+    color: theme.colors.mutedText,
     textAlign: 'center',
-    color: '#666',
-    marginBottom: 30,
+    lineHeight: 24,
+    maxWidth: 280,
+  },
+  formContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingVertical: theme.spacing.xl,
   },
   form: {
-    gap: 15,
+    gap: theme.spacing.xl,
+  },
+  inputGroup: {
+    gap: theme.spacing.sm,
+  },
+  inputLabel: {
+    fontSize: 16,
+    fontFamily: theme.typography.fontFamily.medium,
+    color: theme.colors.text,
+    marginLeft: theme.spacing.sm,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 15,
+    borderWidth: 2,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radii.lg,
+    paddingVertical: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.lg,
     fontSize: 16,
+    fontFamily: theme.typography.fontFamily.regular,
+    color: theme.colors.text,
+    backgroundColor: theme.colors.surface,
+    shadowColor: theme.colors.overlay,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   loginButton: {
-    marginTop: 10,
+    marginTop: theme.spacing.md,
+    paddingVertical: theme.spacing.lg,
+  },
+  footer: {
+    alignItems: 'center',
+    paddingBottom: theme.spacing.xl,
+  },
+  footerText: {
+    fontSize: 14,
+    fontFamily: theme.typography.fontFamily.regular,
+    color: theme.colors.mutedText,
+    textAlign: 'center',
+    lineHeight: 20,
+    maxWidth: 300,
   },
 });

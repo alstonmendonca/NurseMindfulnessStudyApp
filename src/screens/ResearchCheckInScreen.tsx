@@ -9,6 +9,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useShared } from '../contexts/SharedContext';
 import { supabase } from '../utils/supabase';
 import { PSS4_QUESTIONS, COPE_QUESTIONS, WHO5_QUESTIONS } from '../constants/surveyQuestions';
+import { theme } from '../constants/theme';
+import { Screen } from '../components/Screen';
 
 type Props = NativeStackScreenProps<MainStackParamList, 'ResearchCheckIn'>;
 
@@ -55,9 +57,7 @@ export const ResearchCheckInScreen: React.FC<Props> = ({ navigation, route }) =>
     return score;
   };
 
-  const isComplete = () => {
-    return questions.every(q => responses[q.id] !== undefined);
-  };
+  const isComplete = () => questions.every(q => responses[q.id] !== undefined);
 
   const handleSubmit = async () => {
     if (!isComplete() || !participantNumber || !currentShift) return;
@@ -88,20 +88,20 @@ export const ResearchCheckInScreen: React.FC<Props> = ({ navigation, route }) =>
     }
   };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.header}>
-          <Text style={styles.title}>
-            {type === 'PSS4' ? 'Stress Assessment' :
-             type === 'COPE' ? 'Coping Strategies' :
-             'Well-Being Check'}
-          </Text>
-          <Text style={styles.subtitle}>
-            Please answer all questions honestly. Your responses are anonymous.
-          </Text>
-        </View>
+  const totalQuestions = questions.length;
+  const answeredCount = questions.filter(q => responses[q.id] !== undefined).length;
+  const progressRatio = totalQuestions === 0 ? 0 : answeredCount / totalQuestions;
 
+  return (
+    <Screen
+      title={
+            type === 'PSS4' ? 'Stress Assessment' :
+             type === 'COPE' ? 'Coping Strategies' :
+             'Well-Being Check'
+      }
+      subtitle="Please answer all questions honestly. Your responses are anonymous."
+    >
+      <ScrollView style={styles.scrollView}>
         <View style={styles.questionsContainer}>
           {questions.map(question => (
             <SurveyQuestion
@@ -113,43 +113,65 @@ export const ResearchCheckInScreen: React.FC<Props> = ({ navigation, route }) =>
           ))}
         </View>
 
-        <PrimaryButton
-          label={isSubmitting ? "Saving..." : "Submit"}
-          onPress={handleSubmit}
-          disabled={!isComplete() || isSubmitting}
-          style={styles.submitButton}
-        />
-      </ScrollView>
-    </SafeAreaView>
-  );
-};
+          <View style={styles.progressWrap}>
+            <Text style={styles.progressText}>{answeredCount}/{totalQuestions} completed</Text>
+            <View style={styles.progressBarBackground}>
+              <View style={[styles.progressBarFill, { width: `${Math.max(8, progressRatio * 100)}%` }]} />
+            </View>
+          </View>
 
-const styles = StyleSheet.create({
+          <View style={styles.sectionLast}>
+            <PrimaryButton
+              label={isSubmitting ? "Saving..." : "Submit"}
+              onPress={handleSubmit}
+              disabled={!isComplete() || isSubmitting}
+              style={styles.submitButton}
+            />
+          </View>
+        </ScrollView>
+      </Screen>
+    );
+  };const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background,
   },
   scrollView: {
     flex: 1,
   },
-  header: {
+  questionsContainer: {
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: theme.colors.border,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  progressWrap: {
+    marginHorizontal: 20,
+    marginTop: 8,
     marginBottom: 8,
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
+  progressText: {
+    fontSize: 14,
+    color: theme.colors.mutedText,
+    fontFamily: theme.typography.fontFamily.regular,
+    marginBottom: theme.spacing.sm,
   },
-  questionsContainer: {
+  progressBarBackground: {
+    height: 8,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: theme.colors.text,
+  },
+  sectionLast: {
     padding: 20,
   },
   submitButton: {
-    margin: 20,
+    alignSelf: 'stretch',
+    width: '100%',
   },
 });

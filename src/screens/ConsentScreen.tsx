@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
+import { theme } from '../constants/theme';
+import { Screen } from '../components/Screen';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { OnboardingStackParamList } from '../navigation/types';
 import Checkbox from '../components/Checkbox';
@@ -30,9 +32,8 @@ export const ConsentScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <Screen title="Research Consent">
       <ScrollView style={styles.scrollView}>
-        <Text style={styles.title}>Research Consent</Text>
         
         <View style={styles.consentItem}>
           <Checkbox
@@ -79,44 +80,41 @@ export const ConsentScreen: React.FC<Props> = ({ navigation }) => {
       >
         <Text style={styles.buttonText}>I Agree</Text>
       </TouchableOpacity>
-    </SafeAreaView>
+    </Screen>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background,
   },
   scrollView: {
     flex: 1,
     padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
   },
   consentItem: {
     marginBottom: 15,
   },
   info: {
     fontSize: 14,
-    color: '#666',
+    color: theme.colors.mutedText,
     marginTop: 20,
     lineHeight: 20,
   },
   button: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: theme.colors.button,
     paddingVertical: 15,
     margin: 20,
     borderRadius: 25,
+    borderWidth: 1,
+    borderColor: theme.colors.button,
   },
   buttonDisabled: {
-    backgroundColor: '#B4D2F4',
+    backgroundColor: '#D1D5DB',
   },
   buttonText: {
-    color: '#fff',
+    color: theme.colors.buttonText,
     fontSize: 18,
     fontWeight: '600',
     textAlign: 'center',

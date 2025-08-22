@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Department } from '../types';
 import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, Alert } from 'react-native';
+import { theme } from '../constants/theme';
+import { Screen } from '../components/Screen';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { OnboardingStackParamList } from '../navigation/types';
 import { useNotifications } from '../hooks/useNotifications';
@@ -44,12 +46,9 @@ export const WhatToExpectScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <Screen title="What to Expect">
       <View style={styles.content}>
-        <Text style={styles.title}>What to Expect</Text>
-        
         <Text style={styles.description}>{description}</Text>
-        
         <Text style={styles.note}>
           Your participation helps advance our understanding of healthcare workers' mental health.
         </Text>
@@ -64,14 +63,14 @@ export const WhatToExpectScreen: React.FC<Props> = ({ navigation, route }) => {
           {isLoading ? 'Setting up...' : 'Get Started'}
         </Text>
       </TouchableOpacity>
-    </SafeAreaView>
+    </Screen>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,
@@ -87,22 +86,25 @@ const styles = StyleSheet.create({
     fontSize: 18,
     lineHeight: 26,
     marginBottom: 30,
+    color: theme.colors.text,
   },
   note: {
     fontSize: 16,
-    color: '#666',
+    color: theme.colors.mutedText,
     fontStyle: 'italic',
     textAlign: 'center',
     marginTop: 20,
   },
   button: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: theme.colors.button,
     paddingVertical: 15,
     margin: 20,
     borderRadius: 25,
+    borderWidth: 1,
+    borderColor: theme.colors.button,
   },
   buttonText: {
-    color: '#fff',
+    color: theme.colors.buttonText,
     fontSize: 18,
     fontWeight: '600',
     textAlign: 'center',

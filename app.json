@@ -28,6 +28,10 @@
     "plugins": [
       "expo-audio",
       "expo-video"
+    ],
+    "assetBundlePatterns": [
+      "**/*",
+      "assets/fonts/*"
     ]
   }
 }

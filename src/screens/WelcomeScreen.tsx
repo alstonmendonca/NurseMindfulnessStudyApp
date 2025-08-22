@@ -1,5 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity } from 'react-native';
+import { theme } from '../constants/theme';
+import { Screen } from '../components/Screen';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { OnboardingStackParamList } from '../navigation/types';
 
@@ -7,14 +9,10 @@ type Props = NativeStackScreenProps<OnboardingStackParamList, 'Welcome'>;
 
 export const WelcomeScreen: React.FC<Props> = ({ navigation }) => {
   return (
-    <SafeAreaView style={styles.container}>
+    <Screen title="Welcome to Shanthi" subtitle="This app is part of a research study to support nurses' mental health.">
       <View style={styles.content}>
-        <Text style={styles.title}>Welcome to Shanthi</Text>
         <Text style={styles.description}>
           Your personal companion for peace, mindfulness, and well-being during your nursing shifts.
-        </Text>
-        <Text style={styles.subtitle}>
-          This app is part of a research study to understand and support nurses' mental health.
         </Text>
       </View>
       <TouchableOpacity
@@ -23,14 +21,14 @@ export const WelcomeScreen: React.FC<Props> = ({ navigation }) => {
       >
         <Text style={styles.buttonText}>Continue</Text>
       </TouchableOpacity>
-    </SafeAreaView>
+    </Screen>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,
@@ -49,23 +47,26 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 15,
     lineHeight: 24,
+    color: theme.colors.text,
   },
   subtitle: {
     fontSize: 16,
     textAlign: 'center',
-    color: '#666',
+    color: theme.colors.mutedText,
     lineHeight: 22,
   },
   button: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: theme.colors.button,
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 25,
+    borderWidth: 1,
+    borderColor: theme.colors.button,
     marginBottom: 30,
     marginHorizontal: 20,
   },
   buttonText: {
-    color: '#fff',
+    color: theme.colors.buttonText,
     fontSize: 18,
     fontWeight: '600',
     textAlign: 'center',

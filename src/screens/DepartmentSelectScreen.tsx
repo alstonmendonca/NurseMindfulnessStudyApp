@@ -1,5 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
+import { theme } from '../constants/theme';
+import { Screen } from '../components/Screen';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { OnboardingStackParamList } from '../navigation/types';
 import { Department } from '../types';
@@ -10,10 +12,8 @@ const departments: Department[] = ['ICU', 'ER', 'Pediatrics', 'In-Patient', 'Out
 
 export const DepartmentSelectScreen: React.FC<Props> = ({ navigation }) => {
   return (
-    <SafeAreaView style={styles.container}>
+    <Screen title="Select Your Department" subtitle="Which nursing department do you primarily work in?">
       <ScrollView style={styles.scrollView}>
-        <Text style={styles.title}>Select Your Department</Text>
-        <Text style={styles.subtitle}>Which nursing department do you primarily work in?</Text>
 
         {departments.map((department) => (
           <TouchableOpacity
@@ -25,39 +25,30 @@ export const DepartmentSelectScreen: React.FC<Props> = ({ navigation }) => {
           </TouchableOpacity>
         ))}
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background,
   },
   scrollView: {
     flex: 1,
     padding: 20,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 30,
-  },
   departmentButton: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F3F4F6',
     padding: 20,
     borderRadius: 10,
     marginBottom: 15,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: theme.colors.border,
   },
   departmentText: {
     fontSize: 18,
     textAlign: 'center',
+    color: theme.colors.text,
   },
 });
