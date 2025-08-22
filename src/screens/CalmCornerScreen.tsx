@@ -1,27 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, SafeAreaView, Text, ScrollView } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Audio } from 'expo-av';
 import { MainStackParamList } from '../navigation/types';
 import { PrimaryButton } from '../components/PrimaryButton';
-import { BreathingCircle } from '../components/BreathingCircle';
 import { SoundPlayer } from '../components/SoundPlayer';
 import { GratitudeLog } from '../components/GratitudeLog';
+import { useParticipant } from '../contexts/ParticipantContext';
 
 type Props = NativeStackScreenProps<MainStackParamList, 'CalmCorner'>;
 
 type BreathingPhase = 'inhale' | 'hold' | 'exhale';
 
+
+import { Audio } from 'expo-av';
+
 interface Sound {
   name: string;
-  source: any; // Will be properly typed when we add the audio files
+  source: any;
 }
 
 const sounds: Sound[] = [
-  { name: 'White Noise', source: null },
-  { name: 'Brown Noise', source: null },
-  { name: 'Ocean Waves', source: null },
-  { name: 'Rain', source: null },
+  { name: 'White Noise', source: require('../../assets/sounds/white_noise.mp3') },
+  { name: 'Brown Noise', source: require('../../assets/sounds/brown_noise.mp3') },
+  { name: 'Ocean Waves', source: require('../../assets/sounds/ocean_noise.mp3') },
+  { name: 'Rain', source: require('../../assets/sounds/rain_noise.mp3') },
 ];
 
 const groundingExercises = [
@@ -32,80 +34,129 @@ const groundingExercises = [
   '1 thing you can taste',
 ];
 
-export const CalmCornerScreen: React.FC<Props> = () => {
+
+export const CalmCornerScreen: React.FC<Props> = ({ navigation }) => {
+  const { studyGroup } = useParticipant();
+
+  useEffect(() => {
+    // Redirect if not in intervention group
+    if (studyGroup !== 'intervention') {
+      navigation.replace('Home');
+    }
+  }, [studyGroup, navigation]);
+
+  // If not in intervention group, don't render anything
+  if (studyGroup !== 'intervention') {
+    return null;
+  }
+
   const [isBreathing, setIsBreathing] = useState(false);
   const [breathingPhase, setBreathingPhase] = useState<BreathingPhase>('inhale');
   const [breathingDuration, setBreathingDuration] = useState<1 | 3 | 5>(1);
+  const [currentCycle, setCurrentCycle] = useState(0);
   const [currentSound, setCurrentSound] = useState<string | null>(null);
-  const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [currentGroundingIndex, setCurrentGroundingIndex] = useState(0);
+  const [soundObj, setSoundObj] = useState<Audio.Sound | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  useEffect(() => {
-    return () => {
-      if (sound) {
-        sound.unloadAsync();
-      }
-    };
-  }, []);
+  const totalCycles = breathingDuration * 3; // 3 cycles per minute
 
-  const startBreathing = async (duration: 1 | 3 | 5) => {
-    setBreathingDuration(duration);
-    setIsBreathing(true);
-    runBreathingCycle();
+  // Phase durations in milliseconds
+  const PHASE_DURATIONS = {
+    inhale: 4000, // 4 seconds inhale
+    hold: 4000,   // 4 seconds hold
+    exhale: 4000, // 4 seconds exhale
   };
 
-  const runBreathingCycle = () => {
-    let totalCycles = breathingDuration * 3; // 3 cycles per minute
-    let currentCycle = 0;
+  const startBreathing = (duration: 1 | 3 | 5) => {
+    setBreathingDuration(duration);
+    setCurrentCycle(0);
+    setBreathingPhase('inhale');
+    setIsBreathing(true);
+    scheduleNextPhase();
+  };
 
-    const cycle = () => {
-      if (currentCycle >= totalCycles) {
-        setIsBreathing(false);
-        setBreathingPhase('inhale');
-        return;
+  const stopBreathing = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    setIsBreathing(false);
+    setBreathingPhase('inhale');
+    setCurrentCycle(0);
+  };
+
+  const scheduleNextPhase = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+
+    timerRef.current = setTimeout(() => {
+      handlePhaseComplete();
+    }, PHASE_DURATIONS[breathingPhase]);
+  };
+
+  useEffect(() => {
+    if (isBreathing) {
+      scheduleNextPhase();
+    }
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
       }
-
-      // 4 seconds inhale
-      setBreathingPhase('inhale');
-      setTimeout(() => {
-        // 2 seconds hold
-        setBreathingPhase('hold');
-        setTimeout(() => {
-          // 4 seconds exhale
-          setBreathingPhase('exhale');
-          setTimeout(() => {
-            currentCycle++;
-            cycle();
-          }, 4000);
-        }, 2000);
-      }, 4000);
     };
+  }, [breathingPhase, isBreathing]);
 
-    cycle();
+  const handlePhaseComplete = () => {
+    if (!isBreathing) return;
+
+    switch (breathingPhase) {
+      case 'inhale':
+        setBreathingPhase('hold');
+        break;
+      case 'hold':
+        setBreathingPhase('exhale');
+        break;
+      case 'exhale':
+        if (currentCycle >= totalCycles - 1) {
+          stopBreathing();
+        } else {
+          setCurrentCycle(prev => prev + 1);
+          setBreathingPhase('inhale');
+        }
+        break;
+    }
   };
 
   const toggleSound = async (soundName: string) => {
+    // Stop current sound if playing
+    if (soundObj) {
+      await soundObj.stopAsync();
+      await soundObj.unloadAsync();
+      setSoundObj(null);
+    }
     if (currentSound === soundName) {
-      if (sound) {
-        await sound.stopAsync();
-        await sound.unloadAsync();
-      }
       setCurrentSound(null);
-      setSound(null);
-    } else {
-      if (sound) {
-        await sound.stopAsync();
-        await sound.unloadAsync();
-      }
-      // In a real app, we would load the actual sound file here
-      const { sound: newSound } = await Audio.Sound.createAsync(
-        require('../../assets/sounds/placeholder.mp3'),
-        { shouldPlay: true, isLooping: true }
-      );
-      setSound(newSound);
+      return;
+    }
+    const soundData = sounds.find(s => s.name === soundName);
+    if (!soundData) return;
+    try {
+      const { sound } = await Audio.Sound.createAsync(soundData.source, { shouldPlay: true, isLooping: true });
+      setSoundObj(sound);
       setCurrentSound(soundName);
+    } catch (e) {
+      console.error('Error playing sound:', e);
     }
   };
+
+  // Unload sound on unmount
+  useEffect(() => {
+    return () => {
+      if (soundObj) {
+        soundObj.unloadAsync();
+      }
+    };
+  }, [soundObj]);
 
   const nextGroundingStep = () => {
     setCurrentGroundingIndex((prev) => 
@@ -119,11 +170,6 @@ export const CalmCornerScreen: React.FC<Props> = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Guided Breathing</Text>
           <View style={styles.breathingContainer}>
-            <BreathingCircle
-              size={200}
-              isBreathing={isBreathing}
-              phase={breathingPhase}
-            />
             {!isBreathing ? (
               <View style={styles.durationButtons}>
                 <PrimaryButton
@@ -146,10 +192,18 @@ export const CalmCornerScreen: React.FC<Props> = () => {
                 />
               </View>
             ) : (
-              <Text style={styles.breathingText}>
-                {breathingPhase === 'inhale' ? 'Breathe In...' :
-                 breathingPhase === 'hold' ? 'Hold...' : 'Breathe Out...'}
-              </Text>
+              <>
+                <Text style={styles.breathingText}>
+                  {breathingPhase === 'inhale' ? 'BREATHE IN...' :
+                   breathingPhase === 'hold' ? 'HOLD...' : 'BREATHE OUT...'}
+                </Text>
+                <PrimaryButton
+                  label="Stop"
+                  onPress={stopBreathing}
+                  variant="secondary"
+                  style={styles.stopButton}
+                />
+              </>
             )}
           </View>
         </View>
@@ -213,8 +267,10 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   breathingText: {
-    fontSize: 18,
-    marginTop: 20,
+    fontSize: 36,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 40,
     color: '#4A90E2',
   },
   durationButtons: {
@@ -237,6 +293,10 @@ const styles = StyleSheet.create({
     lineHeight: 26,
   },
   nextButton: {
+    width: '50%',
+  },
+  stopButton: {
+    marginTop: 20,
     width: '50%',
   },
 });

@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Shift } from '../types';
 
-const SHIFT_STORAGE_KEY = '@nurse_app_shift';
+const SHIFT_STORAGE_KEY = '@shanthi_app_shift';
 
 export const storeShift = async (shift: Shift) => {
   try {

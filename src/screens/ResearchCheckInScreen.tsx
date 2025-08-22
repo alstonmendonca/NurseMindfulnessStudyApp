@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, SafeAreaView, Text, ScrollView, Alert } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../navigation/types';
+import { CheckInType, canTakeCheckIn, scheduleNextCheckIn } from '../utils/researchSchedule';
 import { SurveyQuestion } from '../components/SurveyQuestion';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { useAuth } from '../contexts/AuthContext';
@@ -12,11 +13,12 @@ import { PSS4_QUESTIONS, COPE_QUESTIONS, WHO5_QUESTIONS } from '../constants/sur
 type Props = NativeStackScreenProps<MainStackParamList, 'ResearchCheckIn'>;
 
 export const ResearchCheckInScreen: React.FC<Props> = ({ navigation, route }) => {
-  const { type } = route.params;
+  const { type }: { type: CheckInType } = route.params;
   const { participantNumber } = useAuth();
   const { currentShift, requireShift } = useShared();
   const [responses, setResponses] = useState<Record<string, number>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAvailable, setIsAvailable] = useState(false);
 
   const questions = type === 'PSS4' ? PSS4_QUESTIONS :
                    type === 'COPE' ? COPE_QUESTIONS :
@@ -24,6 +26,15 @@ export const ResearchCheckInScreen: React.FC<Props> = ({ navigation, route }) =>
 
   useEffect(() => {
     requireShift();
+    if (participantNumber) {
+      canTakeCheckIn(participantNumber, type).then(available => {
+        setIsAvailable(available);
+        if (!available) {
+          Alert.alert('Not Available', 'This survey is not available yet. Please check back later.');
+          navigation.goBack();
+        }
+      });
+    }
   }, []);
 
   const handleResponse = (questionId: string, value: number) => {
@@ -53,6 +64,7 @@ export const ResearchCheckInScreen: React.FC<Props> = ({ navigation, route }) =>
 
     setIsSubmitting(true);
     try {
+      // Submit check-in
       const { error } = await supabase
         .from('research_check_ins')
         .insert({
@@ -63,6 +75,9 @@ export const ResearchCheckInScreen: React.FC<Props> = ({ navigation, route }) =>
         });
 
       if (error) throw error;
+      
+      // Schedule next notification
+      await scheduleNextCheckIn(participantNumber, type);
       
       navigation.goBack();
     } catch (error) {

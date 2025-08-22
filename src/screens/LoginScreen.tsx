@@ -33,7 +33,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>Welcome to NurseWell</Text>
+        <Text style={styles.title}>Welcome to Shanthi</Text>
         <Text style={styles.subtitle}>
           Please enter your participant number and password to continue
         </Text>

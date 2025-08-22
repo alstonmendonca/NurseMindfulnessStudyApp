@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { Audio } from 'expo-av';
 
 interface SoundPlayerProps {
   soundName: string;
-  soundSource: any; // Will be properly typed when we add the audio files
+  soundSource: string;
   isPlaying: boolean;
+  disabled?: boolean;
   onToggle: (soundName: string) => void;
 }
 
@@ -13,17 +13,32 @@ export const SoundPlayer: React.FC<SoundPlayerProps> = ({
   soundName,
   soundSource,
   isPlaying,
+  disabled = false,
   onToggle,
 }) => {
   return (
     <TouchableOpacity
-      style={[styles.container, isPlaying && styles.playing]}
-      onPress={() => onToggle(soundName)}
+      style={[
+        styles.container, 
+        isPlaying && styles.playing,
+        disabled && styles.disabled
+      ]}
+      onPress={() => !disabled && onToggle(soundName)}
+      disabled={disabled}
     >
-      <Text style={[styles.text, isPlaying && styles.playingText]}>
+      <Text style={[
+        styles.text, 
+        isPlaying && styles.playingText,
+        disabled && styles.disabledText
+      ]}>
         {soundName}
+        {disabled && ' (Coming Soon)'}
       </Text>
-      <View style={[styles.indicator, isPlaying && styles.playingIndicator]} />
+      <View style={[
+        styles.indicator, 
+        isPlaying && styles.playingIndicator,
+        disabled && styles.disabledIndicator
+      ]} />
     </TouchableOpacity>
   );
 };
@@ -41,6 +56,10 @@ const styles = StyleSheet.create({
   playing: {
     backgroundColor: '#4A90E2',
   },
+  disabled: {
+    backgroundColor: '#E5E5E5',
+    opacity: 0.7,
+  },
   text: {
     fontSize: 16,
     color: '#333',
@@ -48,6 +67,10 @@ const styles = StyleSheet.create({
   playingText: {
     color: '#fff',
     fontWeight: '600',
+  },
+  disabledText: {
+    color: '#999',
+    fontStyle: 'italic',
   },
   indicator: {
     width: 8,
@@ -57,5 +80,9 @@ const styles = StyleSheet.create({
   },
   playingIndicator: {
     backgroundColor: '#fff',
+  },
+  disabledIndicator: {
+    backgroundColor: '#999',
+    opacity: 0.5,
   },
 });

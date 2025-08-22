@@ -8,7 +8,7 @@ interface ParticipantContextType {
   studyGroup: StudyGroup | null;
   department: Department | null;
   isLoading: boolean;
-  setParticipantData: (data: { studyGroup: StudyGroup; department: Department }) => Promise<void>;
+  setParticipantData: (data: { department: Department }) => Promise<void>;
   hasCompletedOnboarding: boolean;
   setOnboardingComplete: () => Promise<void>;
 }
@@ -35,7 +35,6 @@ export const ParticipantProvider = ({ children }: { children: React.ReactNode })
       loadParticipant();
     } else {
       // Clear data on logout
-      setStudyGroup(null);
       setDepartment(null);
       setHasCompletedOnboarding(false);
       setIsLoading(false);
@@ -63,12 +62,11 @@ export const ParticipantProvider = ({ children }: { children: React.ReactNode })
     }
   };
 
-  let onboardingData: { studyGroup: StudyGroup; department: Department } | null = null;
+  let onboardingData: { department: Department } | null = null;
 
-  const setParticipantData = async (data: { studyGroup: StudyGroup; department: Department }) => {
+  const setParticipantData = async (data: { department: Department }) => {
     // Store the data for when onboarding completes
     onboardingData = data;
-    setStudyGroup(data.studyGroup);
     setDepartment(data.department);
     setHasCompletedOnboarding(false);
   };
@@ -80,7 +78,6 @@ export const ParticipantProvider = ({ children }: { children: React.ReactNode })
       const { error } = await supabase
         .from('participants')
         .update({
-          study_group: onboardingData.studyGroup,
           department: onboardingData.department,
           completed_onboarding: true,
         })
@@ -89,7 +86,6 @@ export const ParticipantProvider = ({ children }: { children: React.ReactNode })
       if (error) throw error;
 
       // Update all states after successful DB update
-      setStudyGroup(onboardingData.studyGroup);
       setDepartment(onboardingData.department);
       setHasCompletedOnboarding(true);
       setCompletedOnboarding(true);

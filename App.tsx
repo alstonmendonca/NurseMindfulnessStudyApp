@@ -16,11 +16,10 @@ import { SharedProvider } from './src/contexts/SharedContext';
 // Configure notifications
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
+    shouldShowBanner: true,  // Shows notification as banner when app is in foreground
+    shouldShowList: true,    // Shows notification in notification list/drawer
+    shouldPlaySound: true,   // Plays notification sound
+    shouldSetBadge: false,   // Don't show app badge count
   }),
 });
 

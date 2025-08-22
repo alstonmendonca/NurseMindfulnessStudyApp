@@ -1,14 +1,29 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, View, SafeAreaView, ScrollView, Text } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../navigation/types';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { JournalPromptCard } from '../components/JournalPromptCard';
 import { journalPrompts } from '../constants/journalPrompts';
+import { useParticipant } from '../contexts/ParticipantContext';
 
 type Props = NativeStackScreenProps<MainStackParamList, 'Journal'>;
 
 export const JournalScreen: React.FC<Props> = ({ navigation }) => {
+  const { studyGroup } = useParticipant();
+
+  useEffect(() => {
+    // Redirect if not in intervention group
+    if (studyGroup !== 'intervention') {
+      navigation.replace('Home');
+    }
+  }, [studyGroup, navigation]);
+
+  // If not in intervention group, don't render anything
+  if (studyGroup !== 'intervention') {
+    return null;
+  }
+
   const todaysPrompt = journalPrompts[Math.floor(Math.random() * journalPrompts.length)];
 
   const navigateToEntry = (prompt?: string) => {

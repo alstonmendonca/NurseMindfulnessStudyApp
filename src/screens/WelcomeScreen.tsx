@@ -9,9 +9,9 @@ export const WelcomeScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>Welcome to NurseWell</Text>
+        <Text style={styles.title}>Welcome to Shanthi</Text>
         <Text style={styles.description}>
-          Your personal companion for managing stress and maintaining well-being during your nursing shifts.
+          Your personal companion for peace, mindfulness, and well-being during your nursing shifts.
         </Text>
         <Text style={styles.subtitle}>
           This app is part of a research study to understand and support nurses' mental health.
