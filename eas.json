@@ -1,0 +1,33 @@
+{
+  "cli": {
+    "version": ">= 3.13.3"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "SUPABASE_URL": "https://spytpzjvechwydrekrgj.supabase.co",
+        "SUPABASE_ANON_KEY": "sb_publishable_K0YygHw_wBjeHloHOwzr-A_HcRD733p"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "SUPABASE_URL": "PREVIEW_SUPABASE_URL",
+        "SUPABASE_ANON_KEY": "PREVIEW_SUPABASE_ANON_KEY"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "app-bundle"
+      }
+    }
+  }
+}

@@ -20,11 +20,20 @@ export const ResearchButton: React.FC<ResearchButtonProps> = ({
   style
 }) => {
   const [daysRemaining, setDaysRemaining] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const checkAvailability = async () => {
-      const days = await getNextCheckInDays(participantId, type);
-      setDaysRemaining(days);
+      try {
+        setIsLoading(true);
+        const days = await getNextCheckInDays(participantId, type);
+        setDaysRemaining(days);
+      } catch (error) {
+        console.error('Error checking availability:', error);
+        setDaysRemaining(null);
+      } finally {
+        setIsLoading(false);
+      }
     };
     checkAvailability();
   }, [participantId, type]);
@@ -37,9 +46,12 @@ export const ResearchButton: React.FC<ResearchButtonProps> = ({
         label={label}
         onPress={onPress}
         variant="secondary"
-        disabled={isDisabled}
+        disabled={isDisabled || isLoading}
+        style={[
+          isDisabled && styles.disabledButton
+        ]}
       />
-      {isDisabled && daysRemaining !== null && (
+      {!isLoading && isDisabled && daysRemaining !== null && daysRemaining > 0 && (
         <Text style={styles.availableText}>
           Available in {daysRemaining} {daysRemaining === 1 ? 'day' : 'days'}
         </Text>
@@ -57,5 +69,10 @@ const styles = StyleSheet.create({
     color: theme.colors.mutedText,
     textAlign: 'center',
     marginTop: 4,
+  },
+  disabledButton: {
+    backgroundColor: theme.colors.background,
+    borderColor: theme.colors.border,
+    opacity: 0.6,
   },
 });

@@ -5,12 +5,14 @@ import { theme } from '../constants/theme';
 interface PrimaryButtonProps extends TouchableOpacityProps {
   label: string;
   variant?: 'primary' | 'secondary';
+  labelStyle?: any;
 }
 
 export const PrimaryButton: React.FC<PrimaryButtonProps> = ({ 
   label, 
   variant = 'primary', 
   style,
+  labelStyle,
   ...props 
 }) => {
   return (
@@ -24,7 +26,9 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
     >
       <Text style={[
         styles.buttonText,
-        variant === 'secondary' && styles.secondaryButtonText
+        variant === 'secondary' && styles.secondaryButtonText,
+        props.disabled && styles.disabledText,
+        labelStyle
       ]}>
         {label}
       </Text>
@@ -55,5 +59,8 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: {
     color: theme.colors.buttonSecondaryText,
+  },
+  disabledText: {
+    color: theme.colors.mutedText,
   },
 });

@@ -82,6 +82,13 @@ export const scheduleNextCheckIn = async (participantId: number, type: CheckInTy
 
 export const getNextCheckInDays = async (participantId: number, type: CheckInType): Promise<number | null> => {
   try {
+    // Get the schedule first to ensure we have valid interval days
+    const schedule = CHECK_IN_SCHEDULES.find(s => s.type === type);
+    if (!schedule) {
+      console.error(`No schedule found for check-in type: ${type}`);
+      return null;
+    }
+
     const { data: lastCheckIn, error } = await supabase
       .from('research_check_ins')
       .select('created_at')
@@ -91,14 +98,15 @@ export const getNextCheckInDays = async (participantId: number, type: CheckInTyp
       .limit(1)
       .single();
 
-    if (error && error.code !== 'PGRST116') {
-      throw error;
+    // If no check-in exists or we get PGRST116 (no rows), it's available now
+    if (error?.code === 'PGRST116' || !lastCheckIn) {
+      return 0;
     }
 
-    if (!lastCheckIn) return 0;
-
-    const schedule = CHECK_IN_SCHEDULES.find(s => s.type === type);
-    if (!schedule) return null;
+    // For any other errors, throw them
+    if (error) {
+      throw error;
+    }
 
     const daysSinceLastCheckIn = differenceInDays(
       new Date(),
@@ -109,6 +117,6 @@ export const getNextCheckInDays = async (participantId: number, type: CheckInTyp
     return daysRemaining > 0 ? daysRemaining : 0;
   } catch (error) {
     console.error('Error calculating next check-in:', error);
-    return null;
+    throw error; // Let the component handle the error
   }
 };
