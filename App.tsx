@@ -1,6 +1,6 @@
 import 'react-native-get-random-values';
 import React, { useEffect } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { useAuth } from './src/contexts/AuthContext';
@@ -11,7 +11,9 @@ import { MainNavigator } from './src/navigation/MainNavigator';
 import { ParticipantProvider } from './src/contexts/ParticipantContext';
 import { AuthProvider } from './src/contexts/AuthContext';
 import { SharedProvider } from './src/contexts/SharedContext';
-
+import { useFonts } from './src/hooks/useFonts';
+import { View, Text, ActivityIndicator } from 'react-native';
+import { theme } from './src/constants/theme';
 
 // Configure notifications
 Notifications.setNotificationHandler({
@@ -26,6 +28,8 @@ Notifications.setNotificationHandler({
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
+  const fontsLoaded = useFonts();
+
   // Set up notification handlers
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener(response => {
@@ -44,13 +48,35 @@ export default function App() {
     };
   }, []);
 
+  // Show loading screen while fonts are loading
+  if (!fontsLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
+        <ActivityIndicator size="large" color={theme.colors.text} />
+        <Text style={{ marginTop: 16, fontFamily: theme.typography.fontFamily.regular, color: theme.colors.text }}>
+          Loading...
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <AuthProvider>
       <ParticipantProvider>
         <SharedProvider>
-          <NavigationContainer>
+          <NavigationContainer theme={{
+            ...DefaultTheme,
+            colors: {
+              ...DefaultTheme.colors,
+              background: theme.colors.background,
+              text: theme.colors.text,
+              border: theme.colors.border,
+              primary: theme.colors.text,
+              card: theme.colors.background,
+            },
+          }}>
             <AppNavigator />
-            <StatusBar style="auto" />
+            <StatusBar style="dark" />
           </NavigationContainer>
         </SharedProvider>
       </ParticipantProvider>

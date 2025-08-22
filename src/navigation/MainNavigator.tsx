@@ -8,6 +8,7 @@ import { JournalScreen } from '../screens/JournalScreen';
 import { JournalEntryScreen } from '../screens/JournalEntryScreen';
 import { ResearchCheckInScreen } from '../screens/ResearchCheckInScreen';
 import { useParticipant } from '../contexts/ParticipantContext';
+import { theme } from '../constants/theme';
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
 
@@ -15,7 +16,14 @@ export const MainNavigator = () => {
   const { studyGroup } = useParticipant();
 
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: theme.colors.background },
+        headerShadowVisible: true,
+        headerTitleStyle: { color: theme.colors.text },
+        headerTintColor: theme.colors.text,
+      }}
+    >
       <Stack.Screen
         name="Home"
         component={HomeScreen}
@@ -26,7 +34,6 @@ export const MainNavigator = () => {
         component={DailyCheckInScreen}
         options={{ 
           title: 'Daily Check-In',
-          headerTintColor: '#4A90E2',
         }}
       />
       {/* Only show these screens for intervention group */}

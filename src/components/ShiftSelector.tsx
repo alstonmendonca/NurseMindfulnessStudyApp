@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Platform } from 'react-native';
 import { Shift } from '../types';
+import { theme } from '../constants/theme';
 
 interface ShiftSelectorProps {
   selectedShift: Shift | null;
@@ -54,28 +55,31 @@ export const ShiftSelector: React.FC<ShiftSelectorProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    padding: 15,
+    padding: 16,
   },
   label: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: theme.typography.fontFamily.medium,
     marginBottom: 10,
+    color: theme.colors.text,
   },
   buttonGroup: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: '#F5F5F5',
-    borderRadius: 15,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 16,
     padding: 4,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   shiftButton: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
   },
   selectedButton: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.surface,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -96,10 +100,11 @@ const styles = StyleSheet.create({
   },
   shiftButtonText: {
     fontSize: 16,
-    color: '#666',
+    fontFamily: theme.typography.fontFamily.regular,
+    color: theme.colors.mutedText,
   },
   selectedButtonText: {
-    color: '#000',
-    fontWeight: '600',
+    color: theme.colors.text,
+    fontFamily: theme.typography.fontFamily.medium,
   },
 });

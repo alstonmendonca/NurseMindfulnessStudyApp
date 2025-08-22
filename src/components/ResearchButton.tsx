@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { theme } from '../constants/theme';
 import { PrimaryButton } from './PrimaryButton';
 import { CheckInType, getNextCheckInDays } from '../utils/researchSchedule';
 
@@ -53,7 +54,7 @@ const styles = StyleSheet.create({
   },
   availableText: {
     fontSize: 12,
-    color: '#666',
+    color: theme.colors.mutedText,
     textAlign: 'center',
     marginTop: 4,
   },

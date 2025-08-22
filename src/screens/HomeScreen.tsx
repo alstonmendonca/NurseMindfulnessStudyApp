@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, SafeAreaView, Text, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../navigation/types';
 import { useParticipant } from '../contexts/ParticipantContext';
@@ -8,156 +8,182 @@ import { useAuth } from '../contexts/AuthContext';
 import { ShiftSelector } from '../components/ShiftSelector';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { ResearchButton } from '../components/ResearchButton';
-import { Shift } from '../types';
+import { theme } from '../constants/theme';
+import { Screen } from '../components/Screen';
+import { CalmIcon, JournalIcon } from '../components/icons';
 
-type Props = NativeStackScreenProps<MainStackParamList, 'Home'>;
+ type Props = NativeStackScreenProps<MainStackParamList, 'Home'>;
 
-export const HomeScreen: React.FC<Props> = ({ navigation }) => {
-  const { studyGroup } = useParticipant();
-  const { currentShift, setCurrentShift } = useShared();
-  const { logout, participantNumber } = useAuth();
+ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
+   const { studyGroup } = useParticipant();
+   const { currentShift, setCurrentShift } = useShared();
+   const { logout, participantNumber } = useAuth();
 
-  const handleDailyCheckIn = () => {
-    if (currentShift) {
-      navigation.navigate('DailyCheckIn');
-    } else {
-      // Show an alert or message asking to select shift first
-    }
-  };
+   const handleDailyCheckIn = () => {
+     if (currentShift) {
+       navigation.navigate('DailyCheckIn');
+     } else {
+       // Consider prompting user to select a shift first
+     }
+   };
 
-  const handleLogout = async () => {
-    await logout();
-  };
+   const handleLogout = async () => {
+     await logout();
+   };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.greeting}>How are you today?</Text>
-      </View>
+   const FeatureCard = ({ title, icon, onPress }: { title: string; icon: React.ReactNode; onPress: () => void }) => (
+     <TouchableOpacity style={styles.featureCard} onPress={onPress}>
+       <View style={styles.featureIconWrap}>{icon}</View>
+       <Text style={styles.featureCardText}>{title}</Text>
+     </TouchableOpacity>
+   );
 
-      <ShiftSelector
-        selectedShift={currentShift}
-        onSelectShift={setCurrentShift}
-      />
+   return (
+     <Screen>
+       {/* Hero */}
+       <View style={styles.hero}>
+         <Text style={styles.appTitle}>SHANTHI</Text>
+         <Text style={styles.appSubtitle}>How are you today?</Text>
+       </View>
 
-      <View style={styles.content}>
-        <PrimaryButton
-          label="Quick Check-In"
-          onPress={handleDailyCheckIn}
-          style={styles.mainButton}
-        />
+       {/* Shift selector */}
+       <ShiftSelector selectedShift={currentShift} onSelectShift={setCurrentShift} />
 
-        {studyGroup === 'intervention' && (
-          <View style={styles.supportTools}>
-            <PrimaryButton
-              label="Calm Corner"
-              onPress={() => navigation.navigate('CalmCorner' as never)}
-              variant="secondary"
-              style={styles.supportButton}
-            />
-            <PrimaryButton
-              label="Journal"
-              onPress={() => navigation.navigate('Journal' as never)}
-              variant="secondary"
-              style={styles.supportButton}
-            />
-          </View>
-        )}
+       {/* Primary action */}
+       <PrimaryButton
+         label="Quick Check-In"
+         onPress={handleDailyCheckIn}
+         style={styles.mainButton}
+       />
 
-        <View style={styles.researchSection}>
-          <Text style={styles.sectionTitle}>Research Check-ins</Text>
-          <View style={styles.researchButtons}>
-            <ResearchButton
-              label="Stress Assessment"
-              type="PSS4"
-              participantId={participantNumber!}
-              onPress={() => navigation.navigate('ResearchCheckIn', { type: 'PSS4' })}
-              style={styles.researchButton}
-            />
-            <ResearchButton
-              label="Coping Strategies"
-              type="COPE"
-              participantId={participantNumber!}
-              onPress={() => navigation.navigate('ResearchCheckIn', { type: 'COPE' })}
-              style={styles.researchButton}
-            />
-            <ResearchButton
-              label="Well-Being Check"
-              type="WHO5"
-              participantId={participantNumber!}
-              onPress={() => navigation.navigate('ResearchCheckIn', { type: 'WHO5' })}
-              style={styles.researchButton}
-            />
-          </View>
-        </View>
-      </View>
-      
-      <TouchableOpacity
-        style={styles.logoutButton}
-        onPress={handleLogout}
-      >
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
-    </SafeAreaView>
-  );
-};
+       <View style={styles.divider} />
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  logoutButton: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    backgroundColor: '#f8f8f8',
-    padding: 10,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  logoutText: {
-    color: '#666',
-    fontSize: 14,
-  },
-  header: {
-    padding: 20,
-    backgroundColor: '#4A90E2',
-  },
-  greeting: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  content: {
-    flex: 1,
-    padding: 20,
-  },
-  mainButton: {
-    marginVertical: 20,
-  },
-  supportTools: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-  },
-  supportButton: {
-    flex: 0.48, // Just under half to leave space between buttons
-  },
-  researchSection: {
-    marginTop: 30,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 15,
-  },
-  researchButtons: {
-    gap: 10,
-  },
-  researchButton: {
-    marginVertical: 0,
-  },
-});
+       {/* Features grid */}
+       {studyGroup === 'intervention' && (
+         <View style={styles.featuresGrid}>
+           <FeatureCard
+             title="Calm Corner"
+             icon={<CalmIcon />}
+             onPress={() => navigation.navigate('CalmCorner' as never)}
+           />
+           <FeatureCard
+             title="Journal"
+             icon={<JournalIcon />}
+             onPress={() => navigation.navigate('Journal' as never)}
+           />
+         </View>
+       )}
+
+       <View style={styles.divider} />
+
+       {/* Research section */}
+       <View style={styles.section}>
+         <Text style={styles.sectionTitle}>Research</Text>
+         <View style={styles.researchButtons}>
+           <ResearchButton
+             label="Stress Assessment"
+             type="PSS4"
+             participantId={participantNumber!}
+             onPress={() => navigation.navigate('ResearchCheckIn', { type: 'PSS4' })}
+           />
+           <ResearchButton
+             label="Coping Strategies"
+             type="COPE"
+             participantId={participantNumber!}
+             onPress={() => navigation.navigate('ResearchCheckIn', { type: 'COPE' })}
+           />
+           <ResearchButton
+             label="Well-Being Check"
+             type="WHO5"
+             participantId={participantNumber!}
+             onPress={() => navigation.navigate('ResearchCheckIn', { type: 'WHO5' })}
+           />
+         </View>
+       </View>
+
+       {/* Floating logout */}
+       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+         <Text style={styles.logoutText}>Logout</Text>
+       </TouchableOpacity>
+     </Screen>
+   );
+ };
+
+ const styles = StyleSheet.create({
+   hero: {
+     alignItems: 'center',
+     marginBottom: theme.spacing.xl,
+   },
+   appTitle: {
+     fontSize: 32,
+     letterSpacing: 3,
+     fontFamily: theme.typography.fontFamily.bold,
+     color: theme.colors.text,
+   },
+   appSubtitle: {
+     marginTop: theme.spacing.sm,
+     fontSize: 16,
+     fontFamily: theme.typography.fontFamily.regular,
+     color: theme.colors.mutedText,
+   },
+   mainButton: {
+     marginTop: theme.spacing.md,
+     marginBottom: theme.spacing.lg,
+   },
+   divider: {
+     height: 1,
+     backgroundColor: theme.colors.border,
+     marginVertical: theme.spacing.lg,
+   },
+   featuresGrid: {
+     flexDirection: 'row',
+     gap: theme.spacing.lg as unknown as number,
+     justifyContent: 'space-between',
+     marginBottom: theme.spacing.xl,
+   },
+   featureCard: {
+     flex: 1,
+     backgroundColor: theme.colors.surface,
+     borderWidth: 1,
+     borderColor: theme.colors.border,
+     borderRadius: theme.radii.lg,
+     paddingVertical: theme.spacing.xl,
+     alignItems: 'center',
+   },
+   featureIconWrap: {
+     marginBottom: theme.spacing.sm,
+   },
+   featureCardText: {
+     fontSize: 16,
+     fontFamily: theme.typography.fontFamily.medium,
+     color: theme.colors.text,
+   },
+   section: {
+     marginTop: theme.spacing.lg,
+   },
+   sectionTitle: {
+     fontSize: 18,
+     fontFamily: theme.typography.fontFamily.medium,
+     color: theme.colors.text,
+     marginBottom: theme.spacing.md,
+   },
+   researchButtons: {
+     gap: theme.spacing.sm as unknown as number,
+   },
+   logoutButton: {
+     position: 'absolute',
+     bottom: 20,
+     right: 20,
+     backgroundColor: theme.colors.buttonSecondaryBg,
+     paddingVertical: 10,
+     paddingHorizontal: 12,
+     borderRadius: 20,
+     borderWidth: 1,
+     borderColor: theme.colors.border,
+   },
+   logoutText: {
+     color: theme.colors.mutedText,
+     fontSize: 14,
+     fontFamily: theme.typography.fontFamily.regular,
+   },
+ });
