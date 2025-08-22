@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 import { MainStackParamList } from '../navigation/types';
 import { useParticipant } from '../contexts/ParticipantContext';
 import { useShared } from '../contexts/SharedContext';
@@ -18,6 +19,14 @@ import { CalmIcon, JournalIcon } from '../components/icons';
    const { studyGroup } = useParticipant();
    const { currentShift, setCurrentShift } = useShared();
    const { logout, participantNumber } = useAuth();
+   const [refreshKey, setRefreshKey] = useState(0);
+
+   // Refresh research buttons when screen comes into focus
+   useFocusEffect(
+     useCallback(() => {
+       setRefreshKey(prev => prev + 1);
+     }, [])
+   );
 
    const handleDailyCheckIn = () => {
      if (currentShift) {
@@ -81,18 +90,21 @@ import { CalmIcon, JournalIcon } from '../components/icons';
          <Text style={styles.sectionTitle}>Research</Text>
          <View style={styles.researchButtons}>
            <ResearchButton
+             key={`PSS4-${refreshKey}`}
              label="Stress Assessment"
              type="PSS4"
              participantId={participantNumber!}
              onPress={() => navigation.navigate('ResearchCheckIn', { type: 'PSS4' })}
            />
            <ResearchButton
+             key={`COPE-${refreshKey}`}
              label="Coping Strategies"
              type="COPE"
              participantId={participantNumber!}
              onPress={() => navigation.navigate('ResearchCheckIn', { type: 'COPE' })}
            />
            <ResearchButton
+             key={`WHO5-${refreshKey}`}
              label="Well-Being Check"
              type="WHO5"
              participantId={participantNumber!}
