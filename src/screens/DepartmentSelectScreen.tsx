@@ -9,12 +9,6 @@ type Props = NativeStackScreenProps<OnboardingStackParamList, 'DepartmentSelect'
 const departments: Department[] = ['ICU', 'ER', 'Pediatrics', 'In-Patient', 'Out-Patient', 'Other'];
 
 export const DepartmentSelectScreen: React.FC<Props> = ({ navigation }) => {
-  // In a real app, we would randomly assign the study group
-  const assignStudyGroup = (selectedDepartment: Department) => {
-    const studyGroup = Math.random() < 0.5 ? 'control' : 'intervention';
-    navigation.navigate('WhatToExpect', { studyGroup, department: selectedDepartment });
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
@@ -25,7 +19,7 @@ export const DepartmentSelectScreen: React.FC<Props> = ({ navigation }) => {
           <TouchableOpacity
             key={department}
             style={styles.departmentButton}
-            onPress={() => assignStudyGroup(department)}
+            onPress={() => navigation.navigate('WhatToExpect', { department })}
           >
             <Text style={styles.departmentText}>{department}</Text>
           </TouchableOpacity>

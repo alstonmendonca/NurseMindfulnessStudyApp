@@ -5,7 +5,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE participants (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     device_fingerprint TEXT NOT NULL UNIQUE,
-    study_group TEXT NOT NULL CHECK (study_group IN ('control', 'intervention')),
+    study_group TEXT,
     department TEXT CHECK (department IN ('ICU', 'ER', 'Pediatrics', 'In-Patient', 'Out-Patient', 'Other')),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     last_active TIMESTAMPTZ DEFAULT NOW(),

@@ -5,7 +5,7 @@ import { getDeviceId } from "./deviceId";
 
 const options = {
   auth: {
-    persistSession: false,
+    persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: false,
   },

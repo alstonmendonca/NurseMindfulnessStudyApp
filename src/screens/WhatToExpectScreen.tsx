@@ -9,28 +9,23 @@ import { useParticipant } from '../contexts/ParticipantContext';
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'WhatToExpect'>;
 
 export const WhatToExpectScreen: React.FC<Props> = ({ navigation, route }) => {
-  const { studyGroup, department } = route.params;
+  const { department } = route.params;
   const { scheduleNextNotification } = useNotifications();
   const { setParticipantData, setOnboardingComplete } = useParticipant();
   const [isLoading, setIsLoading] = useState(false);
 
-  const description = studyGroup === 'control'
-    ? "You'll be helping us understand nurses' well-being through regular check-ins. This includes:\n\n• Weekly research surveys\n• Optional daily mood & stress check-ins"
-    : "You'll have access to support tools and help us understand nurses' well-being. This includes:\n\n• Weekly research surveys\n• Optional daily mood & stress check-ins\n• Calm Corner with relaxation tools\n• Private journaling space";
+  const description = "You'll be helping us understand nurses' well-being through regular check-ins and have access to support tools. This includes:\n\n• Weekly research surveys\n• Optional daily mood & stress check-ins\n• Calm Corner with relaxation tools\n• Private journaling space";
 
   const handleGetStarted = async () => {
     setIsLoading(true);
     try {
-      // Save the study group assignment
-  await setParticipantData({ studyGroup, department });
+      // Save the department selection
+      await setParticipantData({ department });
 
       // Schedule initial notifications
       await scheduleNextNotification('daily-checkin');
       await scheduleNextNotification('research-checkin');
-      
-      if (studyGroup === 'intervention') {
-        await scheduleNextNotification('motivation');
-      }
+      await scheduleNextNotification('motivation');
 
       // Mark onboarding as complete
   await setOnboardingComplete();

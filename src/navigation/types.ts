@@ -11,7 +11,7 @@ export type OnboardingStackParamList = {
   Welcome: undefined;
   Consent: undefined;
   DepartmentSelect: undefined;
-  WhatToExpect: { studyGroup: StudyGroup; department: Department };
+  WhatToExpect: { department: Department };
   Login: undefined; // Added Login screen
 };
 

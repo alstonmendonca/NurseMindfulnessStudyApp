@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase';
+import { storeAuth, getStoredAuth, clearStoredAuth } from '../utils/authStorage';
 
 interface AuthContextType {
   participantNumber: number | null;
@@ -22,10 +23,21 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Always start with null, do not auto-login
+
   const [participantNumber, setParticipantNumber] = useState<number | null>(null);
-    const [completedOnboarding, setCompletedOnboarding] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+  const [completedOnboarding, setCompletedOnboarding] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Restore auth state on mount
+  useEffect(() => {
+    (async () => {
+      const storedNumber = await getStoredAuth();
+      if (storedNumber) {
+        setParticipantNumber(storedNumber);
+        // Optionally, fetch onboarding status from DB if needed
+      }
+    })();
+  }, []);
 
   const login = async (number: string, password: string) => {
     setIsLoading(true);
@@ -40,8 +52,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) throw error;
       if (!data) throw new Error('Invalid credentials');
 
-      setParticipantNumber(parseInt(data.participant_number));
+      const parsedNumber = parseInt(data.participant_number);
+      setParticipantNumber(parsedNumber);
       setCompletedOnboarding(!!data.completed_onboarding);
+      await storeAuth(parsedNumber);
     } catch (error) {
       console.error('Error logging in:', error);
       throw error;
@@ -54,6 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setParticipantNumber(null);
     setCompletedOnboarding(false);
     setIsLoading(false);
+    await clearStoredAuth();
   };
 
   return (
