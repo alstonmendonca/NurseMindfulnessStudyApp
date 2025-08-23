@@ -1,10 +1,20 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AUTH_STORAGE_KEY = '@shanthi_app_auth';
+const ONBOARDING_STORAGE_KEY = '@shanthi_app_onboarding';
 
-export const storeAuth = async (participantNumber: number) => {
+interface StoredAuthData {
+  participantNumber: number;
+  completedOnboarding: boolean;
+}
+
+export const storeAuth = async (participantNumber: number, completedOnboarding: boolean = false) => {
   try {
-    await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(participantNumber));
+    const authData: StoredAuthData = {
+      participantNumber,
+      completedOnboarding
+    };
+    await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authData));
     return true;
   } catch (error) {
     console.error('Error storing auth:', error);
@@ -12,10 +22,20 @@ export const storeAuth = async (participantNumber: number) => {
   }
 };
 
-export const getStoredAuth = async (): Promise<number | null> => {
+export const getStoredAuth = async (): Promise<StoredAuthData | null> => {
   try {
     const value = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
-    return value ? JSON.parse(value) : null;
+    if (!value) return null;
+    
+    const data = JSON.parse(value);
+    // Handle legacy storage format
+    if (typeof data === 'number') {
+      return {
+        participantNumber: data,
+        completedOnboarding: false
+      };
+    }
+    return data;
   } catch (error) {
     console.error('Error getting stored auth:', error);
     return null;

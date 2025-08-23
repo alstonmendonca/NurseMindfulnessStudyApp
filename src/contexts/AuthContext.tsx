@@ -31,10 +31,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Restore auth state on mount
   useEffect(() => {
     (async () => {
-      const storedNumber = await getStoredAuth();
-      if (storedNumber) {
-        setParticipantNumber(storedNumber);
-        // Optionally, fetch onboarding status from DB if needed
+      const storedAuth = await getStoredAuth();
+      if (storedAuth) {
+        setParticipantNumber(storedAuth.participantNumber);
+        setCompletedOnboarding(storedAuth.completedOnboarding);
       }
     })();
   }, []);
@@ -53,9 +53,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!data) throw new Error('Invalid credentials');
 
       const parsedNumber = parseInt(data.participant_number);
+      const hasCompletedOnboarding = !!data.completed_onboarding;
       setParticipantNumber(parsedNumber);
-      setCompletedOnboarding(!!data.completed_onboarding);
-      await storeAuth(parsedNumber);
+      setCompletedOnboarding(hasCompletedOnboarding);
+      await storeAuth(parsedNumber, hasCompletedOnboarding);
     } catch (error) {
       console.error('Error logging in:', error);
       throw error;
@@ -76,7 +77,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         participantNumber,
         completedOnboarding,
-        setCompletedOnboarding,
+        setCompletedOnboarding: async (value: boolean) => {
+      setCompletedOnboarding(value);
+      if (participantNumber) {
+        await storeAuth(participantNumber, value);
+      }
+    },
         login,
         logout,
         isAuthenticated: !!participantNumber,
