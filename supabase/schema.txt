@@ -1,0 +1,71 @@
+Table: participants
+
+study_group (text)
+
+department (text)
+
+created_at (timestamptz)
+
+last_active (timestamptz)
+
+completed_onboarding (bool)
+
+participant_number (int4) [PK?]
+
+participant_password (text)
+
+Table: mood_checks
+
+id (int8) [PK]
+
+participant_id (int4) [FK → participants.participant_number]
+
+mood_score (int4)
+
+stress_level (int4)
+
+feelings (text)
+
+note (text)
+
+shift (text)
+
+created_at (timestamptz)
+
+Table: research_check_ins
+
+checkin_id (int4) [PK]
+
+participant_id (int4) [FK → participants.participant_number]
+
+check_in_type (text)
+
+responses (jsonb)
+
+created_at (timestamptz)
+
+shift (text)
+
+Table: journal_entries
+
+id (int4) [PK]
+
+participant_id (int4) [FK → participants.participant_number]
+
+content (text)
+
+prompt (text)
+
+tags (text[])
+
+shift (text)
+
+created_at (timestamptz)
+
+✅ Relationships:
+
+participants ↔ mood_checks (1-to-many)
+
+participants ↔ research_check_ins (1-to-many)
+
+participants ↔ journal_entries (1-to-many)
