@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, View, Text, TextInput, Alert, KeyboardAvoidingView, Platform, Dimensions, TouchableOpacity, ScrollView } from 'react-native';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../constants/theme';
 import { Screen } from '../components/Screen';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { OnboardingStackParamList } from '../navigation/types';
-import { PrimaryButton } from '../components/PrimaryButton';
 import { useAuth } from '../contexts/AuthContext';
+
+const { width, height } = Dimensions.get('window');
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'Login'>;
 
@@ -13,6 +15,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const { login, isLoading } = useAuth();
   const [participantNumber, setParticipantNumber] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     if (!participantNumber.trim() || !password.trim()) {
@@ -33,17 +36,25 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <Screen>
+    <View style={styles.container}>      
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoid}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-        <View style={styles.container}>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
           {/* Header Section */}
           <View style={styles.header}>
+            <View style={styles.iconContainer}>
+              <MaterialIcons name="self-improvement" size={64} color={theme.colors.primary} />
+            </View>
             <Text style={styles.title}>Welcome to Shanthi</Text>
             <Text style={styles.subtitle}>
-              Your personal companion for peace, mindfulness, and well-being
+              Your mindfulness companion for peace and well-being
             </Text>
           </View>
 
@@ -52,66 +63,115 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
             <View style={styles.form}>
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Participant Number</Text>
-                <TextInput
-                  style={styles.input}
-                  value={participantNumber}
-                  onChangeText={setParticipantNumber}
-                  placeholder="Enter your participant number"
-                  placeholderTextColor={theme.colors.mutedText}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  keyboardType="number-pad"
-                />
+                <View style={styles.inputWrapper}>
+                  <MaterialIcons 
+                    name="person-outline" 
+                    size={20} 
+                    color={theme.colors.textSecondary} 
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    value={participantNumber}
+                    onChangeText={setParticipantNumber}
+                    placeholder="Enter your participant number"
+                    placeholderTextColor={theme.colors.textSecondary}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    keyboardType="number-pad"
+                    returnKeyType="next"
+                  />
+                </View>
               </View>
 
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Password</Text>
-                <TextInput
-                  style={styles.input}
-                  value={password}
-                  onChangeText={setPassword}
-                  placeholder="Enter your password"
-                  placeholderTextColor={theme.colors.mutedText}
-                  secureTextEntry
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
+                <View style={styles.inputWrapper}>
+                  <MaterialIcons 
+                    name="lock-outline" 
+                    size={20} 
+                    color={theme.colors.textSecondary} 
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    style={[styles.input, styles.passwordInput]}
+                    value={password}
+                    onChangeText={setPassword}
+                    placeholder="Enter your password"
+                    placeholderTextColor={theme.colors.textSecondary}
+                    secureTextEntry={!showPassword}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    returnKeyType="done"
+                    onSubmitEditing={handleLogin}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowPassword(!showPassword)}
+                    style={styles.eyeButton}
+                  >
+                    <MaterialIcons 
+                      name={showPassword ? "visibility-off" : "visibility"} 
+                      size={20} 
+                      color={theme.colors.textSecondary} 
+                    />
+                  </TouchableOpacity>
+                </View>
               </View>
 
-              <PrimaryButton
-                label={isLoading ? "Signing In..." : "Sign In"}
+              <TouchableOpacity 
+                style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
                 onPress={handleLogin}
                 disabled={isLoading}
-                style={styles.loginButton}
-              />
+              >
+                <Text style={styles.loginButtonText}>
+                  {isLoading ? "Signing In..." : "Sign In"}
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
 
           {/* Footer Section */}
           <View style={styles.footer}>
+            <View style={styles.footerIconContainer}>
+              <Ionicons name="shield-checkmark-outline" size={16} color={theme.colors.textSecondary} />
+            </View>
             <Text style={styles.footerText}>
-              This app is part of a research study to support nurses' mental health
+              This app is part of a research study to support nurses' mental health and well-being
             </Text>
           </View>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
-    </Screen>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
   keyboardAvoid: {
     flex: 1,
   },
-  container: {
-    flex: 1,
-    justifyContent: 'space-between',
+  scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: theme.spacing.xl,
+    paddingBottom: theme.spacing.xl,
   },
   header: {
     alignItems: 'center',
-    paddingTop: theme.spacing.xxl,
+    paddingTop: theme.spacing.xxxl + 20,
     paddingBottom: theme.spacing.xl,
+  },
+  iconContainer: {
+    marginBottom: theme.spacing.xl,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: `${theme.colors.primary}15`,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...theme.shadows.md,
   },
   title: {
     fontSize: 32,
@@ -122,20 +182,25 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: theme.typography.subtitle,
+    fontSize: 16,
     fontFamily: theme.typography.fontFamily.regular,
-    color: theme.colors.mutedText,
+    color: theme.colors.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
     maxWidth: 280,
   },
   formContainer: {
-    flex: 1,
-    justifyContent: 'center',
     paddingVertical: theme.spacing.xl,
+    minHeight: 320, // Ensure minimum height for form
   },
   form: {
-    gap: theme.spacing.xl,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radii.xl,
+    padding: theme.spacing.xl,
+    ...theme.shadows.lg,
+    gap: theme.spacing.lg,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   inputGroup: {
     gap: theme.spacing.sm,
@@ -146,39 +211,68 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     marginLeft: theme.spacing.sm,
   },
-  input: {
-    borderWidth: 2,
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
     borderColor: theme.colors.border,
     borderRadius: theme.radii.lg,
+    backgroundColor: theme.colors.background,
+    ...theme.shadows.sm,
+  },
+  inputIcon: {
+    marginLeft: theme.spacing.md,
+  },
+  input: {
+    flex: 1,
     paddingVertical: theme.spacing.lg,
-    paddingHorizontal: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.md,
     fontSize: 16,
     fontFamily: theme.typography.fontFamily.regular,
     color: theme.colors.text,
-    backgroundColor: theme.colors.surface,
-    shadowColor: theme.colors.overlay,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    backgroundColor: 'transparent',
+  },
+  passwordInput: {
+    paddingRight: theme.spacing.sm,
+  },
+  eyeButton: {
+    padding: theme.spacing.md,
   },
   loginButton: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.radii.lg,
+    paddingVertical: theme.spacing.lg + 2,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginTop: theme.spacing.md,
-    paddingVertical: theme.spacing.lg,
+    ...theme.shadows.md,
+  },
+  loginButtonDisabled: {
+    backgroundColor: theme.colors.textLight,
+    opacity: 0.6,
+  },
+  loginButtonText: {
+    fontSize: 18,
+    fontFamily: theme.typography.fontFamily.bold,
+    color: theme.colors.textOnPrimary,
+    letterSpacing: 0.5,
   },
   footer: {
     alignItems: 'center',
-    paddingBottom: theme.spacing.xl,
+    paddingTop: theme.spacing.xl,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingHorizontal: theme.spacing.md,
+  },
+  footerIconContainer: {
+    marginRight: theme.spacing.sm,
   },
   footerText: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: theme.typography.fontFamily.regular,
-    color: theme.colors.mutedText,
+    color: theme.colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 20,
-    maxWidth: 300,
+    lineHeight: 18,
+    maxWidth: 280,
   },
 });

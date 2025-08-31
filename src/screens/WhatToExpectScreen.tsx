@@ -16,7 +16,7 @@ export const WhatToExpectScreen: React.FC<Props> = ({ navigation, route }) => {
   const { setParticipantData, setOnboardingComplete } = useParticipant();
   const [isLoading, setIsLoading] = useState(false);
 
-  const description = "You'll be helping us understand nurses' well-being through regular check-ins and have access to support tools. This includes:\n\n• Weekly research surveys\n• Optional daily mood & stress check-ins\n• Calm Corner with relaxation tools\n• Private journaling space";
+  const description = "You'll be helping us understand nurses' well-being through regular check-ins and have access to support tools. This includes:\n\n• One-time demographic survey\n• Optional daily mood & stress check-ins\n• Calm Corner with relaxation tools\n• Private journaling space";
 
   const handleGetStarted = async () => {
     setIsLoading(true);
@@ -26,7 +26,6 @@ export const WhatToExpectScreen: React.FC<Props> = ({ navigation, route }) => {
 
       // Schedule initial notifications
       await scheduleNextNotification('daily-checkin');
-      await scheduleNextNotification('research-checkin');
       await scheduleNextNotification('motivation');
 
       // Mark onboarding as complete

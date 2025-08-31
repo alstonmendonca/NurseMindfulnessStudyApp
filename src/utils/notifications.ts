@@ -12,18 +12,10 @@ Notifications.setNotificationHandler({
 });
 
 export type NotificationType = 
-  | 'research-checkin'
   | 'daily-checkin'
-  | 'motivation'
-  | 'pss4'
-  | 'cope'
-  | 'who5';
+  | 'motivation';
 
 const NOTIFICATION_CONTENT = {
-  'research-checkin': {
-    title: 'Research Check-in Due',
-    body: 'Time for your weekly research survey. Your input helps us understand nurse well-being.',
-  },
   'daily-checkin': {
     title: 'How are you today?',
     body: 'Take a moment to check in with yourself.',
@@ -31,18 +23,6 @@ const NOTIFICATION_CONTENT = {
   'motivation': {
     title: 'Daily Inspiration',
     body: 'Your compassion makes a difference every day.',
-  },
-  'pss4': {
-    title: 'Stress Assessment Due',
-    body: 'Time to complete your PSS-4 survey.',
-  },
-  'cope': {
-    title: 'Coping Strategies Check',
-    body: 'Time to complete your Brief COPE survey.',
-  },
-  'who5': {
-    title: 'Well-being Check Due',
-    body: 'Time to complete your WHO-5 survey.',
   },
 };
 
@@ -93,21 +73,6 @@ const getNextTriggerDate = (targetHour: number, targetMinute: number = 0): Date 
   }
   
   return next;
-};
-
-export const scheduleResearchCheckIn = async (type: 'pss4' | 'cope' | 'who5', intervalDays: number) => {
-  const nextDate = getNextTriggerDate(9); // 9 AM
-  nextDate.setDate(nextDate.getDate() + intervalDays - 1);
-
-  const seconds = Math.floor((nextDate.getTime() - Date.now()) / 1000);
-  if (seconds > 0) {
-    await Notifications.scheduleNotificationAsync({
-      content: NOTIFICATION_CONTENT[type],
-      trigger: {
-        seconds,
-      } as Notifications.NotificationTriggerInput,
-    });
-  }
 };
 
 export const scheduleDailyCheckInReminder = async () => {
@@ -169,11 +134,6 @@ export const setupAllNotifications = async () => {
 
   // Cancel any existing notifications
   await Notifications.cancelAllScheduledNotificationsAsync();
-
-  // Schedule research check-ins
-  await scheduleResearchCheckIn('pss4', 7); // PSS-4 every 7 days
-  await scheduleResearchCheckIn('cope', 7); // COPE every 7 days
-  await scheduleResearchCheckIn('who5', 14); // WHO-5 every 14 days
 
   // Schedule daily reminders
   await scheduleDailyCheckInReminder();

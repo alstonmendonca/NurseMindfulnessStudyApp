@@ -10,7 +10,6 @@ import { OnboardingNavigator } from './src/navigation/OnboardingNavigator';
 import { MainNavigator } from './src/navigation/MainNavigator';
 import { ParticipantProvider } from './src/contexts/ParticipantContext';
 import { AuthProvider } from './src/contexts/AuthContext';
-import { SharedProvider } from './src/contexts/SharedContext';
 import { useFonts } from './src/hooks/useFonts';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { theme } from './src/constants/theme';
@@ -36,10 +35,10 @@ export default function App() {
       const { type } = response.notification.request.content.data || {};
 
       // Handle different notification types
-      if (type === 'research-checkin') {
-        // Navigate to research check-in
-      } else if (type === 'daily-checkin') {
+      if (type === 'daily-checkin') {
         // Navigate to daily check-in
+      } else if (type === 'motivation') {
+        // Handle motivational notification
       }
     });
 
@@ -63,22 +62,20 @@ export default function App() {
   return (
     <AuthProvider>
       <ParticipantProvider>
-        <SharedProvider>
-          <NavigationContainer theme={{
-            ...DefaultTheme,
-            colors: {
-              ...DefaultTheme.colors,
-              background: theme.colors.background,
-              text: theme.colors.text,
-              border: theme.colors.border,
-              primary: theme.colors.text,
-              card: theme.colors.background,
-            },
-          }}>
-            <AppNavigator />
-            <StatusBar style="dark" />
-          </NavigationContainer>
-        </SharedProvider>
+        <NavigationContainer theme={{
+          ...DefaultTheme,
+          colors: {
+            ...DefaultTheme.colors,
+            background: theme.colors.background,
+            text: theme.colors.text,
+            border: theme.colors.border,
+            primary: theme.colors.text,
+            card: theme.colors.background,
+          },
+        }}>
+          <AppNavigator />
+          <StatusBar style="dark" />
+        </NavigationContainer>
       </ParticipantProvider>
     </AuthProvider>
   );
@@ -86,7 +83,7 @@ export default function App() {
 
 // Separate navigator component to use hooks after providers are mounted
 function AppNavigator() {
-  const { participantNumber, completedOnboarding } = useAuth();
+  const { participantNumber, completedOnboarding, demographicSurveyCompleted } = useAuth();
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>

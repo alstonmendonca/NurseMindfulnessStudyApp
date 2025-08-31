@@ -38,22 +38,23 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: theme.colors.button,
+    backgroundColor: theme.colors.primary,
     paddingVertical: 16,
     paddingHorizontal: 20,
-    borderRadius: theme.radii.pill,
+    borderRadius: theme.radii.lg,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.button,
+    borderWidth: 0,
+    ...theme.shadows.md,
   },
   buttonText: {
-    color: theme.colors.buttonText,
+    color: theme.colors.textOnPrimary,
     fontSize: 16,
     fontFamily: theme.typography.fontFamily.medium,
+    fontWeight: theme.typography.weightSemibold,
   },
   secondaryButton: {
-    backgroundColor: theme.colors.buttonSecondaryBg,
+    backgroundColor: theme.colors.buttonSecondary,
     borderWidth: 1,
     borderColor: theme.colors.buttonSecondaryBorder,
   },
@@ -62,5 +63,6 @@ const styles = StyleSheet.create({
   },
   disabledText: {
     color: theme.colors.mutedText,
+    opacity: 0.6,
   },
 });
