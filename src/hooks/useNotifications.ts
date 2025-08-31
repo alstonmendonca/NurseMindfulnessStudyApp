@@ -27,16 +27,6 @@ export const useNotifications = () => {
         });
       }
 
-      // Schedule research check-ins
-      const checkInId = await Notifications.scheduleNotificationAsync({
-        content: {
-          title: 'Time for your research check-in',
-          body: 'Please complete your weekly surveys to help us understand nurse well-being.',
-          data: { type: 'research-checkin' },
-        },
-        trigger: null, // Will be managed by the app logic
-      });
-
       // Schedule daily check-in reminder
       const dailyId = await Notifications.scheduleNotificationAsync({
         content: {
@@ -60,11 +50,11 @@ export const useNotifications = () => {
 
         return () => {
           Notifications.cancelScheduledNotificationAsync(motivationalId);
+          Notifications.cancelScheduledNotificationAsync(dailyId);
         };
       }
 
       return () => {
-        Notifications.cancelScheduledNotificationAsync(checkInId);
         Notifications.cancelScheduledNotificationAsync(dailyId);
       };
     };
@@ -80,10 +70,6 @@ export const useNotifications = () => {
     };
 
     switch (type) {
-      case 'research-checkin':
-        content.title = 'Research Check-in Due';
-        content.body = 'Time for your weekly surveys.';
-        break;
       case 'daily-checkin':
         content.title = 'Daily Check-in';
         content.body = 'How are you feeling today?';

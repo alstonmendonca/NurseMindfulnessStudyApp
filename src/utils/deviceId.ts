@@ -10,14 +10,14 @@ export async function getDeviceId() {
     let deviceId: string | null = null;
 
     if (Platform.OS === "web") {
-      // ✅ Use localStorage for web
+      // Use localStorage for web
       deviceId = localStorage.getItem(DEVICE_ID_KEY);
       if (!deviceId) {
         deviceId = uuidv4();
         localStorage.setItem(DEVICE_ID_KEY, deviceId);
       }
     } else {
-      // ✅ Use SecureStore for iOS/Android
+      // Use SecureStore for iOS/Android
       deviceId = await SecureStore.getItemAsync(DEVICE_ID_KEY);
       if (!deviceId) {
         deviceId = uuidv4();

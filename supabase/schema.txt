@@ -10,6 +10,8 @@ last_active (timestamptz)
 
 completed_onboarding (bool)
 
+demographic_survey_completed (bool)
+
 participant_number (int4) [PK?]
 
 participant_password (text)
@@ -32,19 +34,49 @@ shift (text)
 
 created_at (timestamptz)
 
-Table: research_check_ins
+Table: demographic_surveys
 
-checkin_id (int4) [PK]
+id (int4) [PK]
 
 participant_id (int4) [FK → participants.participant_number]
 
-check_in_type (text)
+sample_code (varchar)
 
-responses (jsonb)
+age_group (varchar)
+
+gender (varchar)
+
+marital_status (varchar)
+
+educational_qualification (varchar)
+
+educational_other (text)
+
+designation (varchar)
+
+income_level (varchar)
+
+years_experience (varchar)
+
+working_unit (varchar)
+
+working_unit_other (text)
+
+work_shift (varchar)
+
+hours_per_day (varchar)
+
+night_shifts_per_month (varchar)
+
+night_shifts_other (text)
+
+place_of_residence (varchar)
+
+residence_other (text)
+
+contact_number (varchar)
 
 created_at (timestamptz)
-
-shift (text)
 
 Table: journal_entries
 
@@ -66,6 +98,6 @@ created_at (timestamptz)
 
 participants ↔ mood_checks (1-to-many)
 
-participants ↔ research_check_ins (1-to-many)
+participants ↔ demographic_surveys (1-to-many)
 
 participants ↔ journal_entries (1-to-many)

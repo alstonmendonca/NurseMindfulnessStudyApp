@@ -17,11 +17,5 @@ export type OnboardingStackParamList = {
 
 export type MainStackParamList = {
   Home: undefined;
-  DailyCheckIn: undefined;
-  ResearchCheckIn: { type: 'PSS4' | 'COPE' | 'WHO5' };
-  CalmCorner: {
-    initialActivity?: 'breathing' | 'sounds' | 'grounding' | 'gratitude';
-  };
-  Journal: undefined;
-  JournalEntry: { prompt?: string };
+  DemographicSurvey: undefined;
 };
