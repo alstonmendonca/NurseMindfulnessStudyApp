@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase';
 import { storeAuth, getStoredAuth, clearStoredAuth } from '../utils/authStorage';
+import { appUsageTracker } from '../utils/appUsageTracker';
 
 interface AuthContextType {
   participantNumber: number | null;
@@ -38,9 +39,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (storedAuth) {
         setParticipantNumber(storedAuth.participantNumber);
         setCompletedOnboarding(storedAuth.completedOnboarding);
+        
+        // Re-check survey status from database
+        const { data: surveyData, error: surveyError } = await supabase
+          .from('demographic_surveys')
+          .select('id')
+          .eq('participant_id', storedAuth.participantNumber)
+          .single();
+        
+        const hasDemographicSurveyCompleted = !surveyError && !!surveyData;
+        setDemographicSurveyCompleted(hasDemographicSurveyCompleted);
+        
+        // Start usage tracking if user is authenticated and has completed survey
+        if (storedAuth.participantNumber && hasDemographicSurveyCompleted) {
+          await appUsageTracker.initializeTracking(storedAuth.participantNumber);
+        }
       }
     })();
   }, []);
+
+  // Effect to handle usage tracking when auth state changes
+  useEffect(() => {
+    const handleUsageTracking = async () => {
+      if (participantNumber && demographicSurveyCompleted) {
+        // Start tracking when user is logged in and survey is completed
+        await appUsageTracker.initializeTracking(participantNumber);
+      } else {
+        // Stop tracking when user logs out or doesn't meet criteria
+        await appUsageTracker.stopTracking();
+      }
+    };
+
+    handleUsageTracking();
+  }, [participantNumber, demographicSurveyCompleted]);
 
   const login = async (number: string, password: string) => {
     setIsLoading(true);
@@ -81,6 +112,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
+    // Stop usage tracking before clearing auth state
+    await appUsageTracker.stopTracking();
+    
     setParticipantNumber(null);
     setCompletedOnboarding(false);
     setDemographicSurveyCompleted(false);

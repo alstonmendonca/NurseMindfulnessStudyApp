@@ -12,6 +12,16 @@ export interface Participant {
   last_active: string;
 }
 
+export interface AppUsageSession {
+  id: number;
+  participant_number: number;
+  session_start: string;
+  session_end?: string;
+  duration_minutes?: number;
+  app_version?: string;
+  created_at: string;
+}
+
 export interface MoodCheck {
   id: string;
   participant_id: string;
