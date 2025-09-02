@@ -1,44 +1,8 @@
-Table: participants
-
-study_group (text)
-
-department (text)
-
-created_at (timestamptz)
-
-last_active (timestamptz)
-
-completed_onboarding (bool)
-
-demographic_survey_completed (bool)
-
-participant_number (int4) [PK?]
-
-participant_password (text)
-
-Table: mood_checks
-
-id (int8) [PK]
-
-participant_id (int4) [FK → participants.participant_number]
-
-mood_score (int4)
-
-stress_level (int4)
-
-feelings (text)
-
-note (text)
-
-shift (text)
-
-created_at (timestamptz)
-
 Table: demographic_surveys
 
-id (int4) [PK]
+id (int4, PK) → Primary key
 
-participant_id (int4) [FK → participants.participant_number]
+participant_id (int4)
 
 sample_code (varchar)
 
@@ -78,26 +42,36 @@ contact_number (varchar)
 
 created_at (timestamptz)
 
-Table: journal_entries
+Table: participants
 
-id (int4) [PK]
+participant_number (int4, PK)
 
-participant_id (int4) [FK → participants.participant_number]
+participant_password (text)
 
-content (text)
+demographic_survey_completed (bool)
 
-prompt (text)
+department (text)
 
-tags (text[])
-
-shift (text)
+study_group (text)
 
 created_at (timestamptz)
 
-✅ Relationships:
+last_active (timestamptz)
 
-participants ↔ mood_checks (1-to-many)
+completed_onboarding (bool)
 
-participants ↔ demographic_surveys (1-to-many)
+Table: app_usage_sessions
 
-participants ↔ journal_entries (1-to-many)
+id (int4, PK) → Primary key
+
+participant_number (int4) → Foreign key to participants.participant_number
+
+session_start (timestamptz) → When the app was opened/session started
+
+session_end (timestamptz) → When the app was closed/session ended
+
+duration_minutes (int4) → Duration of the session in minutes
+
+app_version (varchar) → App version for tracking
+
+created_at (timestamptz) → Record creation timestamp

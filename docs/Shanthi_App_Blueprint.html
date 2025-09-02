@@ -1,0 +1,468 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Shanthi App Blueprint</title>
+    <style>
+        body {
+            font-family: 'Calibri', 'Arial', sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            background: white;
+            color: #333;
+        }
+        h1 {
+            color: #2c5aa0;
+            border-bottom: 3px solid #2c5aa0;
+            padding-bottom: 10px;
+            font-size: 28px;
+            text-align: center;
+        }
+        h2 {
+            color: #2c5aa0;
+            border-bottom: 2px solid #e1e5e9;
+            padding-bottom: 8px;
+            margin-top: 30px;
+            font-size: 22px;
+        }
+        h3 {
+            color: #4a90e2;
+            margin-top: 25px;
+            font-size: 18px;
+        }
+        h4 {
+            color: #666;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        p {
+            margin-bottom: 12px;
+            text-align: justify;
+        }
+        ul, ol {
+            margin-bottom: 15px;
+            padding-left: 25px;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        pre {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            overflow-x: auto;
+        }
+        blockquote {
+            border-left: 4px solid #2c5aa0;
+            margin: 15px 0;
+            padding-left: 15px;
+            font-style: italic;
+            color: #555;
+        }
+        hr {
+            border: 0;
+            height: 2px;
+            background: linear-gradient(to right, transparent, #2c5aa0, transparent);
+            margin: 30px 0;
+        }
+        .executive-summary {
+            background-color: #f0f7ff;
+            border: 1px solid #2c5aa0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .highlight-box {
+            background-color: #fff9e6;
+            border-left: 4px solid #ffa500;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e1e5e9;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+<h1>Shanthi: Mindfulness Meditation App for Healthcare Workers</h1><p></p>
+<h2>Application Blueprint & Technical Documentation</h2><p></p>
+<p></p><p></p>
+<hr><p></p>
+<p></p><p></p>
+<h2>Executive Summary</h2><p></p>
+<p></p><p></p>
+<p><strong>Shanthi</strong> is a comprehensive mindfulness and meditation mobile application specifically designed for healthcare workers, particularly nurses. The app serves as a research platform to study nurses' mental health and well-being while providing evidence-based interventions for stress management, emotional regulation, and burnout prevention.</p><p></p>
+<p></p><p></p>
+<h3>Core Mission</h3><p></p>
+<p>To support healthcare workers' mental health through accessible mindfulness tools while conducting research on the effectiveness of digital mental health interventions in healthcare settings.</p><p></p>
+<p></p><p></p>
+<hr><p></p>
+<p></p><p></p>
+<h2>Application Overview</h2><p></p>
+<p></p><p></p>
+<h3>Target Audience</h3><p></p>
+<ul><li>**Primary**: Registered nurses working in hospital settings</li></ul><p></p>
+<ul><li>**Secondary**: Healthcare support staff and medical professionals</li></ul><p></p>
+<ul><li>**Research Participants**: Healthcare workers enrolled in mental health studies</li></ul><p></p>
+<p></p><p></p>
+<h3>Platform & Technology</h3><p></p>
+<ul><li>**Framework**: React Native with Expo</li></ul><p></p>
+<ul><li>**Database**: Supabase (PostgreSQL)</li></ul><p></p>
+<ul><li>**Authentication**: Secure participant-based login system</li></ul><p></p>
+<ul><li>**Platform Support**: Android mobile devices</li></ul><p></p>
+<ul><li>**Network Requirements**: WiFi-only operation for data integrity</li></ul><p></p>
+<p></p><p></p>
+<hr><p></p>
+<p></p><p></p>
+<h2>Core Functionality</h2><p></p>
+<p></p><p></p>
+<h3>1. Authentication & Onboarding</h3><p></p>
+<p><strong>Purpose</strong>: Secure participant enrollment and study compliance</p><p></p>
+<p></p><p></p>
+<p><strong>Features</strong>:</p><p></p>
+<ul><li>Participant number-based authentication system</li></ul><p></p>
+<ul><li>Secure password verification through Supabase database</li></ul><p></p>
+<ul><li>Informed consent process with multiple consent checkpoints</li></ul><p></p>
+<ul><li>Department selection for research stratification</li></ul><p></p>
+<ul><li>One-time demographic survey completion requirement</li></ul><p></p>
+<p></p><p></p>
+<p><strong>Data Collected</strong>:</p><p></p>
+<ul><li>Participant credentials and demographic information</li></ul><p></p>
+<ul><li>Department and shift information</li></ul><p></p>
+<ul><li>Educational background and work experience</li></ul><p></p>
+<ul><li>Contact information for study follow-up</li></ul><p></p>
+<p></p><p></p>
+<h3>2. Demographic Data Collection</h3><p></p>
+<p><strong>Purpose</strong>: Comprehensive participant profiling for research analysis</p><p></p>
+<p></p><p></p>
+<p><strong>Survey Components</strong> (14 questions):</p><p></p>
+<ul><li>1. Sample code identification</li></ul><p></p>
+<ul><li>2. Age group classification</li></ul><p></p>
+<ul><li>3. Gender identity</li></ul><p></p>
+<ul><li>4. Marital status</li></ul><p></p>
+<ul><li>5. Educational qualifications</li></ul><p></p>
+<ul><li>6. Professional designation</li></ul><p></p>
+<ul><li>7. Income level assessment</li></ul><p></p>
+<ul><li>8. Years of nursing experience</li></ul><p></p>
+<ul><li>9. Current working unit/department</li></ul><p></p>
+<ul><li>10. Work shift patterns</li></ul><p></p>
+<ul><li>11. Daily work hours</li></ul><p></p>
+<ul><li>12. Monthly night shift frequency</li></ul><p></p>
+<ul><li>13. Place of residence</li></ul><p></p>
+<ul><li>14. Contact number</li></ul><p></p>
+<p></p><p></p>
+<p><strong>Data Validation</strong>:</p><p></p>
+<ul><li>One survey per participant number (prevents duplicates)</li></ul><p></p>
+<ul><li>Required field validation</li></ul><p></p>
+<ul><li>Cross-device consistency</li></ul><p></p>
+<ul><li>Automatic progress tracking</li></ul><p></p>
+<p></p><p></p>
+<h3>3. Calm Corner: Meditation & Relaxation Hub</h3><p></p>
+<p><strong>Purpose</strong>: Evidence-based stress reduction and mindfulness intervention</p><p></p>
+<p></p><p></p>
+<p><strong>Audio Content Library</strong>:</p><p></p>
+<ul><li>**Nature Sounds**: Ocean waves, rain variations (light, heavy, with thunder)</li></ul><p></p>
+<ul><li>**Ambient Sounds**: Crackling fire, brown noise variations (4 types)</li></ul><p></p>
+<ul><li>**Guided Meditations**: Professional meditation sessions (12-20 minutes)</li></ul><p></p>
+<ul><li>**Background Playback**: Continuous audio during app use</li></ul><p></p>
+<p></p><p></p>
+<p><strong>Video Content Library</strong>:</p><p></p>
+<ul><li>**Guided Breathing Exercises**: Progressive breathing techniques (1-5 minutes)</li></ul><p></p>
+<ul><li>**Visual Meditation**: Screen-based breathing guides</li></ul><p></p>
+<ul><li>**In-app Video Player**: Native playback with full controls</li></ul><p></p>
+<p></p><p></p>
+<p><strong>User Experience Features</strong>:</p><p></p>
+<ul><li>Category-based content organization</li></ul><p></p>
+<ul><li>Search and filter capabilities</li></ul><p></p>
+<ul><li>Favorite content bookmarking</li></ul><p></p>
+<ul><li>Progress tracking and usage analytics</li></ul><p></p>
+<ul><li>Offline content availability</li></ul><p></p>
+<p></p><p></p>
+<h3>4. App Usage Monitoring System</h3><p></p>
+<p><strong>Purpose</strong>: Research-grade data collection on app engagement patterns</p><p></p>
+<p></p><p></p>
+<p><strong>Tracking Capabilities</strong>:</p><p></p>
+<ul><li>Session start/end timestamps</li></ul><p></p>
+<ul><li>Total app usage duration</li></ul><p></p>
+<ul><li>Background/foreground state detection</li></ul><p></p>
+<ul><li>Network connectivity impact analysis</li></ul><p></p>
+<ul><li>Cross-device usage patterns</li></ul><p></p>
+<p></p><p></p>
+<p><strong>Technical Implementation</strong>:</p><p></p>
+<ul><li>Real-time AppState monitoring</li></ul><p></p>
+<ul><li>Automatic session management</li></ul><p></p>
+<ul><li>Offline data buffering and synchronization</li></ul><p></p>
+<ul><li>WiFi-only operation enforcement</li></ul><p></p>
+<ul><li>Orphaned session cleanup and recovery</li></ul><p></p>
+<p></p><p></p>
+<p><strong>Data Integrity Features</strong>:</p><p></p>
+<ul><li>Timeout mechanisms for accurate session tracking</li></ul><p></p>
+<ul><li>Network-aware data synchronization</li></ul><p></p>
+<ul><li>Duplicate session prevention</li></ul><p></p>
+<ul><li>Research-grade timestamp accuracy</li></ul><p></p>
+<p></p><p></p>
+<h3>5. Network Connectivity Management</h3><p></p>
+<p><strong>Purpose</strong>: Ensure data quality and research compliance</p><p></p>
+<p></p><p></p>
+<p><strong>WiFi-Only Operation</strong>:</p><p></p>
+<ul><li>Real-time connectivity monitoring</li></ul><p></p>
+<ul><li>User-friendly WiFi requirement interface</li></ul><p></p>
+<ul><li>Automatic app access when connected</li></ul><p></p>
+<ul><li>Connection status indicators</li></ul><p></p>
+<p></p><p></p>
+<p><strong>Offline Capabilities</strong>:</p><p></p>
+<ul><li>Local session data buffering</li></ul><p></p>
+<ul><li>Automatic data synchronization when online</li></ul><p></p>
+<ul><li>Seamless user experience during connectivity transitions</li></ul><p></p>
+<ul><li>No data loss during network interruptions</li></ul><p></p>
+<p></p><p></p>
+<hr><p></p>
+<p></p><p></p>
+<h2>Research & Monitoring Components</h2><p></p>
+<p></p><p></p>
+<h3>Data Collection Framework</h3><p></p>
+<p></p><p></p>
+<p><strong>1. Usage Analytics</strong></p><p></p>
+<ul><li>Daily app usage frequency</li></ul><p></p>
+<ul><li>Session duration patterns</li></ul><p></p>
+<ul><li>Feature utilization rates</li></ul><p></p>
+<ul><li>Peak usage times</li></ul><p></p>
+<ul><li>Engagement consistency over time</li></ul><p></p>
+<p></p><p></p>
+<p><strong>2. Demographic Analysis</strong></p><p></p>
+<ul><li>Cross-sectional participant profiling</li></ul><p></p>
+<ul><li>Department-specific usage patterns</li></ul><p></p>
+<ul><li>Shift-based engagement analysis</li></ul><p></p>
+<ul><li>Experience level correlations</li></ul><p></p>
+<p></p><p></p>
+<p><strong>3. Intervention Effectiveness</strong></p><p></p>
+<ul><li>Meditation content preference tracking</li></ul><p></p>
+<ul><li>Session completion rates</li></ul><p></p>
+<ul><li>Feature adoption patterns</li></ul><p></p>
+<ul><li>Long-term engagement metrics</li></ul><p></p>
+<p></p><p></p>
+<h3>Privacy & Data Security</h3><p></p>
+<p></p><p></p>
+<p><strong>HIPAA-Compliant Design</strong>:</p><p></p>
+<ul><li>No personal health information storage</li></ul><p></p>
+<ul><li>Anonymized participant identification</li></ul><p></p>
+<ul><li>Secure database encryption</li></ul><p></p>
+<ul><li>Limited data retention policies</li></ul><p></p>
+<p></p><p></p>
+<p><strong>Research Ethics</strong>:</p><p></p>
+<ul><li>Informed consent requirements</li></ul><p></p>
+<ul><li>Voluntary participation model</li></ul><p></p>
+<ul><li>Data withdrawal capabilities</li></ul><p></p>
+<ul><li>Transparent data usage policies</li></ul><p></p>
+<p></p><p></p>
+<hr><p></p>
+<p></p><p></p>
+<h2>Technical Architecture</h2><p></p>
+<p></p><p></p>
+<h3>Frontend Architecture</h3><p></p>
+<ul><li>**React Native**: Cross-platform mobile development</li></ul><p></p>
+<ul><li>**Expo**: Development and deployment framework</li></ul><p></p>
+<ul><li>**TypeScript**: Type-safe development environment</li></ul><p></p>
+<ul><li>**React Navigation**: Screen navigation management</li></ul><p></p>
+<p></p><p></p>
+<h3>Backend Infrastructure</h3><p></p>
+<ul><li>**Supabase**: PostgreSQL database with real-time capabilities</li></ul><p></p>
+<ul><li>**Row Level Security**: Participant data isolation</li></ul><p></p>
+<ul><li>**RESTful APIs**: Secure data communication</li></ul><p></p>
+<ul><li>**Real-time Subscriptions**: Live data updates</li></ul><p></p>
+<p></p><p></p>
+<h3>Database Schema</h3><p></p>
+<p></p><p></p>
+<p><strong>Core Tables</strong>:</p><p></p>
+<ul><li>1. `participants` - User authentication and basic information</li></ul><p></p>
+<ul><li>2. `demographic_surveys` - One-time demographic data collection</li></ul><p></p>
+<ul><li>3. `app_usage_sessions` - Detailed usage analytics</li></ul><p></p>
+<ul><li>4. `journal_entries` - Optional user reflections</li></ul><p></p>
+<ul><li>5. `mood_checks` - Daily emotional state tracking</li></ul><p></p>
+<p></p><p></p>
+<p><strong>Data Relationships</strong>:</p><p></p>
+<ul><li>Participant-centric data model</li></ul><p></p>
+<ul><li>Foreign key relationships for data integrity</li></ul><p></p>
+<ul><li>Indexed queries for performance optimization</li></ul><p></p>
+<ul><li>Audit trails for research compliance</li></ul><p></p>
+<p></p><p></p>
+<h3>Security Implementation</h3><p></p>
+<ul><li>**Authentication**: Supabase Auth with custom participant system</li></ul><p></p>
+<ul><li>**Data Encryption**: End-to-end encryption for sensitive data</li></ul><p></p>
+<ul><li>**Network Security**: HTTPS-only communication</li></ul><p></p>
+<ul><li>**Local Storage**: Secure device storage with encryption</li></ul><p></p>
+<p></p><p></p>
+<hr><p></p>
+<p></p><p></p>
+<h2>User Experience Design</h2><p></p>
+<p></p><p></p>
+<h3>Interface Philosophy</h3><p></p>
+<ul><li>**Minimal & Calming**: Stress-reducing visual design</li></ul><p></p>
+<ul><li>**Intuitive Navigation**: Single-tap access to core features</li></ul><p></p>
+<ul><li>**Professional Aesthetic**: Suitable for healthcare professionals</li></ul><p></p>
+<ul><li>**Accessibility**: Screen reader support and high contrast options</li></ul><p></p>
+<p></p><p></p>
+<h3>Design Elements</h3><p></p>
+<ul><li>**Color Palette**: Calming blues and greens with professional accents</li></ul><p></p>
+<ul><li>**Typography**: Clean, readable fonts optimized for mobile</li></ul><p></p>
+<ul><li>**Icons**: Healthcare-friendly iconography</li></ul><p></p>
+<ul><li>**Animations**: Subtle, purposeful motion design</li></ul><p></p>
+<p></p><p></p>
+<h3>User Flow Optimization</h3><p></p>
+<ul><li>**Quick Access**: Immediate meditation content availability</li></ul><p></p>
+<ul><li>**Progress Indicators**: Clear completion and achievement feedback</li></ul><p></p>
+<ul><li>**Error Handling**: Graceful failure recovery with user guidance</li></ul><p></p>
+<ul><li>**Performance**: Optimized loading times and smooth interactions</li></ul><p></p>
+<p></p><p></p>
+<hr><p></p>
+<p></p><p></p>
+<h2>Intervention Features</h2><p></p>
+<p></p><p></p>
+<h3>Stress Management Tools</h3><p></p>
+<ul><li>**Breathing Exercises**: Guided respiratory techniques</li></ul><p></p>
+<ul><li>**Progressive Relaxation**: Body scan meditation</li></ul><p></p>
+<ul><li>**Mindfulness Training**: Present-moment awareness exercises</li></ul><p></p>
+<ul><li>**Sleep Support**: Evening relaxation content</li></ul><p></p>
+<p></p><p></p>
+<h3>Professional Support</h3><p></p>
+<ul><li>**Shift-Specific Content**: Pre/post-shift meditation</li></ul><p></p>
+<ul><li>**Break-Time Sessions**: Short 5-minute relaxation breaks</li></ul><p></p>
+<ul><li>**Emergency Stress Relief**: Quick access anxiety management</li></ul><p></p>
+<ul><li>**Burnout Prevention**: Long-term resilience building</li></ul><p></p>
+<p></p><p></p>
+<h3>Evidence-Based Content</h3><p></p>
+<ul><li>**Clinical Research**: Content based on published studies</li></ul><p></p>
+<ul><li>**Healthcare-Specific**: Tailored to nursing challenges</li></ul><p></p>
+<ul><li>**Culturally Appropriate**: Sensitive to healthcare culture</li></ul><p></p>
+<ul><li>**Professionally Reviewed**: Validated by mental health experts</li></ul><p></p>
+<p></p><p></p>
+<hr><p></p>
+<p></p><p></p>
+<h2>Data Insights & Analytics</h2><p></p>
+<p></p><p></p>
+<h3>Research Outcomes</h3><p></p>
+<p>The app provides comprehensive data for studying:</p><p></p>
+<ul><li>Digital intervention effectiveness in healthcare settings</li></ul><p></p>
+<ul><li>Usage pattern correlations with stress levels</li></ul><p></p>
+<ul><li>Optimal timing for mindfulness interventions</li></ul><p></p>
+<ul><li>Feature preferences across different nursing specialties</li></ul><p></p>
+<p></p><p></p>
+<h3>Performance Metrics</h3><p></p>
+<ul><li>**Engagement Rate**: Percentage of active daily users</li></ul><p></p>
+<ul><li>**Session Completion**: Meditation session finish rates</li></ul><p></p>
+<ul><li>**Content Preference**: Most utilized features and content</li></ul><p></p>
+<ul><li>**Retention Rate**: Long-term app usage sustainability</li></ul><p></p>
+<p></p><p></p>
+<h3>Clinical Applications</h3><p></p>
+<ul><li>Evidence for digital mental health interventions</li></ul><p></p>
+<ul><li>Best practices for healthcare worker stress management</li></ul><p></p>
+<ul><li>Technology adoption patterns in healthcare settings</li></ul><p></p>
+<ul><li>Scalability assessments for institution-wide deployment</li></ul><p></p>
+<p></p><p></p>
+<hr><p></p>
+<p></p><p></p>
+<h2>Quality Assurance & Testing</h2><p></p>
+<p></p><p></p>
+<h3>Testing Framework</h3><p></p>
+<ul><li>**Unit Testing**: Individual component functionality</li></ul><p></p>
+<ul><li>**Integration Testing**: Cross-component interactions</li></ul><p></p>
+<ul><li>**User Acceptance Testing**: Real healthcare worker feedback</li></ul><p></p>
+<ul><li>**Performance Testing**: Load and stress testing protocols</li></ul><p></p>
+<p></p><p></p>
+<h3>Data Validation</h3><p></p>
+<ul><li>**Input Validation**: Comprehensive form validation</li></ul><p></p>
+<ul><li>**Data Integrity**: Cross-reference consistency checks</li></ul><p></p>
+<ul><li>**Backup Systems**: Automated data backup and recovery</li></ul><p></p>
+<ul><li>**Audit Trails**: Complete action logging for research compliance</li></ul><p></p>
+<p></p><p></p>
+<hr><p></p>
+<p></p><p></p>
+<h2>Deployment & Maintenance</h2><p></p>
+<p></p><p></p>
+<h3>Distribution Strategy</h3><p></p>
+<ul><li>**App Store Deployment**: iOS App Store and Google Play Store</li></ul><p></p>
+<ul><li>**Enterprise Distribution**: Direct institutional deployment</li></ul><p></p>
+<ul><li>**Beta Testing**: Closed beta with select healthcare facilities</li></ul><p></p>
+<ul><li>**Phased Rollout**: Gradual feature release and testing</li></ul><p></p>
+<p></p><p></p>
+<h3>Ongoing Maintenance</h3><p></p>
+<ul><li>**Regular Updates**: Monthly feature improvements and bug fixes</li></ul><p></p>
+<ul><li>**Content Updates**: Quarterly meditation content additions</li></ul><p></p>
+<ul><li>**Security Patches**: Immediate security vulnerability fixes</li></ul><p></p>
+<ul><li>**Performance Optimization**: Continuous app performance improvements</li></ul><p></p>
+<p></p><p></p>
+<h3>Support Infrastructure</h3><p></p>
+<ul><li>**Technical Support**: Dedicated support team for user issues</li></ul><p></p>
+<ul><li>**Research Support**: Academic partnership for ongoing studies</li></ul><p></p>
+<ul><li>**User Feedback**: Integrated feedback collection and response system</li></ul><p></p>
+<ul><li>**Training Materials**: User guides and best practice documentation</li></ul><p></p>
+<p></p><p></p>
+<hr><p></p>
+<p></p><p></p>
+<h2>Future Development Roadmap</h2><p></p>
+<p></p><p></p>
+<h3>Phase 2 Enhancements</h3><p></p>
+<ul><li>**AI-Powered Recommendations**: Personalized content suggestions</li></ul><p></p>
+<ul><li>**Wearable Integration**: Heart rate and stress level monitoring</li></ul><p></p>
+<ul><li>**Social Features**: Anonymous peer support communities</li></ul><p></p>
+<ul><li>**Advanced Analytics**: Predictive modeling for burnout risk</li></ul><p></p>
+<p></p><p></p>
+<h3>Phase 3 Expansion</h3><p></p>
+<ul><li>**Multi-Language Support**: International healthcare worker support</li></ul><p></p>
+<ul><li>**Integration with EHR Systems**: Seamless workflow integration</li></ul><p></p>
+<ul><li>**Institutional Dashboard**: Aggregate wellness metrics for administrators</li></ul><p></p>
+<ul><li>**Telehealth Integration**: Connection with mental health professionals</li></ul><p></p>
+<p></p><p></p>
+<h3>Long-term Vision</h3><p></p>
+<ul><li>**Research Platform**: Comprehensive digital health research tools</li></ul><p></p>
+<ul><li>**Global Healthcare Network**: Worldwide healthcare worker support system</li></ul><p></p>
+<ul><li>**Policy Impact**: Evidence-based healthcare policy recommendations</li></ul><p></p>
+<ul><li>**Industry Standards**: Best practices for healthcare worker mental health</li></ul><p></p>
+<p></p><p></p>
+<hr><p></p>
+<p></p><p></p>
+<h2>Conclusion</h2><p></p>
+<p></p><p></p>
+<p><strong>Shanthi</strong> represents a comprehensive approach to supporting healthcare workers' mental health through technology. By combining evidence-based mindfulness interventions with rigorous research data collection, the app serves dual purposes: providing immediate stress relief for healthcare professionals while contributing to the scientific understanding of digital mental health interventions in healthcare settings.</p><p></p>
+<p></p><p></p>
+<p>The app's robust technical architecture, user-centered design, and research-focused data collection make it a valuable tool for both individual healthcare workers seeking stress management solutions and researchers studying the effectiveness of digital mental health interventions in high-stress professional environments.</p><p></p>
+<p></p><p></p>
+<p>Through its WiFi-only operation, comprehensive usage tracking, and privacy-focused design, Shanthi ensures both data integrity for research purposes and user trust through transparent, secure operation. The application stands as a model for how technology can be leveraged to address critical mental health challenges in healthcare while advancing scientific understanding of digital intervention effectiveness.</p><p></p>
+<p></p><p></p>
+<hr><p></p>
+<p></p><p></p>
+<p><em>Document Version: 1.0</em>  </p><p></p>
+<p><em>Last Updated: September 2, 2025</em>  </p><p></p>
+<p><em>Prepared for: Research Documentation & Technical Specification</em></p><p></p>
+<p></p>
+</body>
+</html>

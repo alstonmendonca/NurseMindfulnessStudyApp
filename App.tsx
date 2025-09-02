@@ -1,5 +1,5 @@
 import 'react-native-get-random-values';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
@@ -13,6 +13,8 @@ import { AuthProvider } from './src/contexts/AuthContext';
 import { useFonts } from './src/hooks/useFonts';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { theme } from './src/constants/theme';
+import { WiFiRequiredScreen } from './src/components/WiFiRequiredScreen';
+import { networkManager } from './src/utils/networkManager';
 
 // Configure notifications
 Notifications.setNotificationHandler({
@@ -84,6 +86,53 @@ export default function App() {
 // Separate navigator component to use hooks after providers are mounted
 function AppNavigator() {
   const { participantNumber, completedOnboarding, demographicSurveyCompleted } = useAuth();
+  const [isWiFiConnected, setIsWiFiConnected] = useState<boolean>(false);
+  const [isCheckingWiFi, setIsCheckingWiFi] = useState<boolean>(true);
+
+  useEffect(() => {
+    // Initialize network monitoring
+    const initializeNetwork = async () => {
+      try {
+        await networkManager.initialize();
+        const isConnected = networkManager.isWiFiConnected();
+        setIsWiFiConnected(isConnected);
+        setIsCheckingWiFi(false);
+
+        // Listen for network changes
+        const handleNetworkChange = (state: any) => {
+          setIsWiFiConnected(networkManager.isWiFiConnected());
+        };
+
+        networkManager.addConnectivityListener(handleNetworkChange);
+        
+        return () => {
+          networkManager.removeConnectivityListener(handleNetworkChange);
+        };
+      } catch (error) {
+        console.error('Error initializing network monitoring:', error);
+        setIsCheckingWiFi(false);
+      }
+    };
+
+    initializeNetwork();
+  }, []);
+
+  // Show loading while checking WiFi status
+  if (isCheckingWiFi) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
+        <ActivityIndicator size="large" color={theme.colors.text} />
+        <Text style={{ marginTop: 16, fontFamily: theme.typography.fontFamily.regular, color: theme.colors.text }}>
+          Checking network connection...
+        </Text>
+      </View>
+    );
+  }
+
+  // Show WiFi required screen if not connected to WiFi
+  if (!isWiFiConnected) {
+    return <WiFiRequiredScreen />;
+  }
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
