@@ -1,18 +1,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AUTH_STORAGE_KEY = '@shanthi_app_auth';
-const ONBOARDING_STORAGE_KEY = '@shanthi_app_onboarding';
 
 interface StoredAuthData {
   participantNumber: number;
-  completedOnboarding: boolean;
 }
 
-export const storeAuth = async (participantNumber: number, completedOnboarding: boolean = false) => {
+export const storeAuth = async (participantNumber: number, _unused: boolean = false) => {
   try {
     const authData: StoredAuthData = {
-      participantNumber,
-      completedOnboarding
+      participantNumber
     };
     await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authData));
     return true;
@@ -31,8 +28,13 @@ export const getStoredAuth = async (): Promise<StoredAuthData | null> => {
     // Handle legacy storage format
     if (typeof data === 'number') {
       return {
-        participantNumber: data,
-        completedOnboarding: false
+        participantNumber: data
+      };
+    }
+    // Handle legacy storage format with completedOnboarding
+    if (data.participantNumber) {
+      return {
+        participantNumber: data.participantNumber
       };
     }
     return data;

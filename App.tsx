@@ -6,7 +6,6 @@ import { StatusBar } from 'expo-status-bar';
 import { useAuth } from './src/contexts/AuthContext';
 import * as Notifications from 'expo-notifications';
 import { RootStackParamList } from './src/navigation/types';
-import { OnboardingNavigator } from './src/navigation/OnboardingNavigator';
 import { MainNavigator } from './src/navigation/MainNavigator';
 import { ParticipantProvider } from './src/contexts/ParticipantContext';
 import { AuthProvider } from './src/contexts/AuthContext';
@@ -85,7 +84,7 @@ export default function App() {
 
 // Separate navigator component to use hooks after providers are mounted
 function AppNavigator() {
-  const { participantNumber, completedOnboarding, demographicSurveyCompleted } = useAuth();
+  const { participantNumber } = useAuth();
   const [isWiFiConnected, setIsWiFiConnected] = useState<boolean>(false);
   const [isCheckingWiFi, setIsCheckingWiFi] = useState<boolean>(true);
 
@@ -138,8 +137,6 @@ function AppNavigator() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {!participantNumber ? (
         <Stack.Screen name="Login" component={require('./src/screens/LoginScreen').LoginScreen} />
-      ) : !completedOnboarding ? (
-        <Stack.Screen name="Onboarding" component={OnboardingNavigator} options={{ gestureEnabled: false }} />
       ) : (
         <Stack.Screen name="Main" component={MainNavigator} />
       )}

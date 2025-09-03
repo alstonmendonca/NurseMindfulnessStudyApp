@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, Alert } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, Alert, TouchableOpacity } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../navigation/types';
 import { useAuth } from '../contexts/AuthContext';
@@ -20,6 +20,7 @@ export const DemographicSurveyScreen: React.FC<Props> = ({ navigation }) => {
   const [otherResponses, setOtherResponses] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCheckingExistingSurvey, setIsCheckingExistingSurvey] = useState(true);
+  const [nonSharingPledgeAccepted, setNonSharingPledgeAccepted] = useState(false);
 
   // Check if survey already exists when component loads
   useEffect(() => {
@@ -80,7 +81,7 @@ export const DemographicSurveyScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const isComplete = (): boolean => {
-    return DEMOGRAPHIC_QUESTIONS.filter(q => q.required).every(question => {
+    const allQuestionsAnswered = DEMOGRAPHIC_QUESTIONS.filter(q => q.required).every(question => {
       const value = getResponseValue(question.id);
       if (!value) return false;
 
@@ -93,6 +94,9 @@ export const DemographicSurveyScreen: React.FC<Props> = ({ navigation }) => {
 
       return true;
     });
+
+    // Both survey questions and non-sharing pledge must be completed
+    return allQuestionsAnswered && nonSharingPledgeAccepted;
   };
 
   const handleSubmit = async () => {
@@ -234,15 +238,52 @@ export const DemographicSurveyScreen: React.FC<Props> = ({ navigation }) => {
           </View>
 
           <View style={styles.progressWrap}>
-            <Text style={styles.progressText}>{answeredCount}/{totalQuestions} completed</Text>
+            <Text style={styles.progressText}>{answeredCount}/{totalQuestions} questions completed</Text>
             <View style={styles.progressBarBackground}>
               <View style={[styles.progressBarFill, { width: `${Math.max(8, progressRatio * 100)}%` }]} />
             </View>
           </View>
 
+          {/* Non Sharing Pledge Section */}
+          <View style={styles.pledgeSection}>
+            <View style={styles.pledgeCard}>
+              <View style={styles.pledgeHeader}>
+                <MaterialIcons name="security" size={24} color={theme.colors.primary} />
+                <Text style={styles.pledgeTitle}>Non-Sharing Pledge</Text>
+              </View>
+              
+              <View style={styles.pledgeContent}>
+                <Text style={styles.pledgeText}>
+                  I agree that I will not share the mobile app access and login details with colleagues from other wards or study groups. I understand that sharing intervention details may affect the reliability of the study findings.
+                </Text>
+                
+                <TouchableOpacity
+                  style={styles.pledgeCheckbox}
+                  onPress={() => setNonSharingPledgeAccepted(!nonSharingPledgeAccepted)}
+                  activeOpacity={0.7}
+                >
+                  <View style={[
+                    styles.checkboxContainer,
+                    nonSharingPledgeAccepted && styles.checkboxChecked
+                  ]}>
+                    {nonSharingPledgeAccepted && (
+                      <MaterialIcons name="check" size={16} color={theme.colors.textOnPrimary} />
+                    )}
+                  </View>
+                  <Text style={styles.checkboxLabel}>
+                    I agree to the Non-Sharing Pledge
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+
           <View style={styles.submitSection}>
             <LinearGradient
-              colors={[theme.colors.primary, theme.colors.primaryDark]}
+              colors={isComplete() 
+                ? [theme.colors.primary, theme.colors.primaryDark]
+                : [theme.colors.border, theme.colors.textSecondary]
+              }
               style={styles.submitButtonGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
@@ -251,14 +292,17 @@ export const DemographicSurveyScreen: React.FC<Props> = ({ navigation }) => {
                 label={isSubmitting ? "Saving..." : "Submit Survey"}
                 onPress={handleSubmit}
                 disabled={!isComplete() || isSubmitting}
-                style={styles.submitButton}
+                style={[
+                  styles.submitButton,
+                  !isComplete() && styles.submitButtonDisabled
+                ]}
               />
             </LinearGradient>
             
             <View style={styles.footerInfo}>
               <Ionicons name="information-circle-outline" size={16} color={theme.colors.textOnPrimary} />
               <Text style={styles.footerText}>
-                This survey helps us understand our participants better and improve the study experience.
+                Complete all required questions and accept the pledge to submit your survey.
               </Text>
             </View>
           </View>
@@ -361,6 +405,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: theme.radii.xl,
     borderTopRightRadius: theme.radii.xl,
     ...theme.shadows.lg,
+    marginTop: theme.spacing.sm,
   },
   scrollView: {
     flex: 1,
@@ -368,44 +413,114 @@ const styles = StyleSheet.create({
   questionsContainer: {
     padding: theme.spacing.lg,
     paddingTop: theme.spacing.xl,
+    paddingBottom: theme.spacing.xxxl,
   },
   questionCard: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radii.lg,
     padding: theme.spacing.lg,
-    marginBottom: theme.spacing.md,
-    ...theme.shadows.sm,
+    marginBottom: theme.spacing.lg,
+    ...theme.shadows.md,
     borderWidth: 1,
     borderColor: theme.colors.borderLight,
+    transform: [{ scale: 1 }],
   },
   
   // Progress styles
   progressWrap: {
     marginHorizontal: theme.spacing.lg,
-    marginTop: theme.spacing.sm,
-    marginBottom: theme.spacing.lg,
-    padding: theme.spacing.md,
+    marginTop: theme.spacing.lg,
+    marginBottom: theme.spacing.xl,
+    padding: theme.spacing.lg,
     backgroundColor: theme.colors.surfaceVariant,
-    borderRadius: theme.radii.md,
-    ...theme.shadows.sm,
+    borderRadius: theme.radii.lg,
+    ...theme.shadows.md,
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
   },
   progressText: {
-    fontSize: 14,
+    fontSize: 16,
     color: theme.colors.text,
-    fontFamily: theme.typography.fontFamily.medium,
-    marginBottom: theme.spacing.sm,
+    fontFamily: theme.typography.fontFamily.bold,
+    marginBottom: theme.spacing.md,
     textAlign: 'center',
   },
   progressBarBackground: {
-    height: 8,
+    height: 10,
     backgroundColor: theme.colors.border,
-    borderRadius: theme.radii.sm,
+    borderRadius: theme.radii.md,
     overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
     backgroundColor: theme.colors.primary,
-    borderRadius: theme.radii.sm,
+    borderRadius: theme.radii.md,
+    minWidth: 10,
+  },
+  
+  // Pledge section styles
+  pledgeSection: {
+    marginHorizontal: theme.spacing.lg,
+    marginBottom: theme.spacing.lg,
+  },
+  pledgeCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radii.lg,
+    borderWidth: 2,
+    borderColor: theme.colors.primary,
+    ...theme.shadows.md,
+  },
+  pledgeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: theme.spacing.lg,
+    paddingBottom: theme.spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.borderLight,
+  },
+  pledgeTitle: {
+    fontSize: 18,
+    fontFamily: theme.typography.fontFamily.bold,
+    color: theme.colors.primary,
+    marginLeft: theme.spacing.sm,
+  },
+  pledgeContent: {
+    padding: theme.spacing.lg,
+    paddingTop: theme.spacing.md,
+  },
+  pledgeText: {
+    fontSize: 14,
+    fontFamily: theme.typography.fontFamily.regular,
+    color: theme.colors.text,
+    lineHeight: 20,
+    marginBottom: theme.spacing.lg,
+    textAlign: 'justify',
+  },
+  pledgeCheckbox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: theme.spacing.sm,
+  },
+  checkboxContainer: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: theme.colors.primary,
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: theme.spacing.md,
+  },
+  checkboxChecked: {
+    backgroundColor: theme.colors.primary,
+  },
+  checkboxLabel: {
+    fontSize: 14,
+    fontFamily: theme.typography.fontFamily.medium,
+    color: theme.colors.text,
+    flex: 1,
+    lineHeight: 18,
   },
   
   // Submit section styles
@@ -421,6 +536,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     alignSelf: 'stretch',
     width: '100%',
+  },
+  submitButtonDisabled: {
+    opacity: 0.6,
   },
   footerInfo: {
     flexDirection: 'row',
