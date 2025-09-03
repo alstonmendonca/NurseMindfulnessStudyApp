@@ -9,8 +9,6 @@ interface ParticipantContextType {
   department: Department | null;
   isLoading: boolean;
   setParticipantData: (data: { department: Department }) => Promise<void>;
-  hasCompletedOnboarding: boolean;
-  setOnboardingComplete: () => Promise<void>;
 }
 
 const ParticipantContext = createContext<ParticipantContextType | null>(null);
@@ -24,11 +22,10 @@ export const useParticipant = () => {
 };
 
 export const ParticipantProvider = ({ children }: { children: React.ReactNode }) => {
-  const { participantNumber, setCompletedOnboarding } = useAuth();
+  const { participantNumber } = useAuth();
   const [studyGroup, setStudyGroup] = useState<StudyGroup | null>(null);
   const [department, setDepartment] = useState<Department | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
 
   useEffect(() => {
     if (participantNumber) {
@@ -36,7 +33,6 @@ export const ParticipantProvider = ({ children }: { children: React.ReactNode })
     } else {
       // Clear data on logout
       setDepartment(null);
-      setHasCompletedOnboarding(false);
       setIsLoading(false);
     }
   }, [participantNumber]);
@@ -53,7 +49,6 @@ export const ParticipantProvider = ({ children }: { children: React.ReactNode })
       if (participant) {
         setStudyGroup(participant.study_group);
         setDepartment(participant.department);
-        setHasCompletedOnboarding(participant.completed_onboarding || false);
       }
     } catch (error) {
       console.error('Error loading participant:', error);
@@ -62,35 +57,23 @@ export const ParticipantProvider = ({ children }: { children: React.ReactNode })
     }
   };
 
-  let onboardingData: { department: Department } | null = null;
-
   const setParticipantData = async (data: { department: Department }) => {
-    // Store the data for when onboarding completes
-    onboardingData = data;
-    setDepartment(data.department);
-    setHasCompletedOnboarding(false);
-  };
-
-  const setOnboardingComplete = async () => {
     try {
-      if (!participantNumber || !onboardingData) return;
+      if (!participantNumber) return;
       
       const { error } = await supabase
         .from('participants')
         .update({
-          department: onboardingData.department,
-          completed_onboarding: true,
+          department: data.department,
         })
         .eq('participant_number', participantNumber);
         
       if (error) throw error;
 
-      // Update all states after successful DB update
-      setDepartment(onboardingData.department);
-      setHasCompletedOnboarding(true);
-      setCompletedOnboarding(true);
+      // Update state after successful DB update
+      setDepartment(data.department);
     } catch (error) {
-      console.error('Error completing onboarding:', error);
+      console.error('Error updating participant data:', error);
       throw error;
     }
   };
@@ -102,9 +85,7 @@ export const ParticipantProvider = ({ children }: { children: React.ReactNode })
         studyGroup,
         department,
         isLoading,
-        hasCompletedOnboarding,
         setParticipantData,
-        setOnboardingComplete,
       }}
     >
       {children}

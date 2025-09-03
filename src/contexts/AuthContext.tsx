@@ -6,9 +6,7 @@ import { appUsageTracker } from '../utils/appUsageTracker';
 interface AuthContextType {
   participantNumber: number | null;
   login: (number: string, password: string) => Promise<void>;
-  completedOnboarding: boolean;
   demographicSurveyCompleted: boolean;
-  setCompletedOnboarding: (value: boolean) => void;
   setDemographicSurveyCompleted: (value: boolean) => void;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
@@ -28,7 +26,6 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const [participantNumber, setParticipantNumber] = useState<number | null>(null);
-  const [completedOnboarding, setCompletedOnboarding] = useState(false);
   const [demographicSurveyCompleted, setDemographicSurveyCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -38,7 +35,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const storedAuth = await getStoredAuth();
       if (storedAuth) {
         setParticipantNumber(storedAuth.participantNumber);
-        setCompletedOnboarding(storedAuth.completedOnboarding);
         
         // Re-check survey status from database
         const { data: surveyData, error: surveyError } = await supabase
@@ -87,7 +83,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!data) throw new Error('Invalid credentials');
 
       const parsedNumber = parseInt(data.participant_number);
-      const hasCompletedOnboarding = !!data.completed_onboarding;
       
       // Check if participant_number exists in demographic_surveys table
       const { data: surveyData, error: surveyError } = await supabase
@@ -100,9 +95,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const hasDemographicSurveyCompleted = !surveyError && !!surveyData;
       
       setParticipantNumber(parsedNumber);
-      setCompletedOnboarding(hasCompletedOnboarding);
       setDemographicSurveyCompleted(hasDemographicSurveyCompleted);
-      await storeAuth(parsedNumber, hasCompletedOnboarding);
+      await storeAuth(parsedNumber, false); // No longer storing onboarding status
     } catch (error) {
       console.error('Error logging in:', error);
       throw error;
@@ -116,7 +110,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await appUsageTracker.stopTracking();
     
     setParticipantNumber(null);
-    setCompletedOnboarding(false);
     setDemographicSurveyCompleted(false);
     setIsLoading(false);
     await clearStoredAuth();
@@ -126,14 +119,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider
       value={{
         participantNumber,
-        completedOnboarding,
         demographicSurveyCompleted,
-        setCompletedOnboarding: async (value: boolean) => {
-      setCompletedOnboarding(value);
-      if (participantNumber) {
-        await storeAuth(participantNumber, value);
-      }
-    },
         setDemographicSurveyCompleted: async (value: boolean) => {
           setDemographicSurveyCompleted(value);
           // Note: We don't update the participants table flag anymore

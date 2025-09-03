@@ -4,12 +4,12 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../constants/theme';
 import { Screen } from '../components/Screen';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { OnboardingStackParamList } from '../navigation/types';
+import { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../contexts/AuthContext';
 
 const { width, height } = Dimensions.get('window');
 
-type Props = NativeStackScreenProps<OnboardingStackParamList, 'Login'>;
+type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 export const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const { login, isLoading } = useAuth();
