@@ -86,13 +86,13 @@ class NetworkManager {
     this.connectivityListeners = this.connectivityListeners.filter(l => l !== listener);
   }
 
-  // Wait for WiFi connection (useful for startup)
-  async waitForWiFiConnection(timeoutMs: number = 30000): Promise<boolean> {
+  // Wait for internet connection (useful for startup)
+  async waitForInternetConnection(timeoutMs: number = 30000): Promise<boolean> {
     return new Promise((resolve) => {
       const startTime = Date.now();
       
       const checkConnection = () => {
-        if (this.isWiFiConnected()) {
+        if (this.hasInternetConnection()) {
           resolve(true);
           return;
         }

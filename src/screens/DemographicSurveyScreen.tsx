@@ -9,7 +9,6 @@ import { Screen } from '../components/Screen';
 import { theme } from '../constants/theme';
 import { DEMOGRAPHIC_QUESTIONS, DemographicSurveyData } from '../constants/demographicSurvey';
 import { supabase } from '../utils/supabase';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 
 type Props = NativeStackScreenProps<MainStackParamList, 'DemographicSurvey'>;
@@ -19,44 +18,7 @@ export const DemographicSurveyScreen: React.FC<Props> = ({ navigation }) => {
   const [responses, setResponses] = useState<Partial<DemographicSurveyData>>({});
   const [otherResponses, setOtherResponses] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isCheckingExistingSurvey, setIsCheckingExistingSurvey] = useState(true);
   const [nonSharingPledgeAccepted, setNonSharingPledgeAccepted] = useState(false);
-
-  // Check if survey already exists when component loads
-  useEffect(() => {
-    const checkExistingSurvey = async () => {
-      if (!participantNumber) return;
-
-      try {
-        const { data, error } = await supabase
-          .from('demographic_surveys')
-          .select('id')
-          .eq('participant_id', participantNumber)
-          .single();
-
-        if (!error && data) {
-          // Survey already exists for this participant number
-          Alert.alert(
-            'Survey Already Completed',
-            'You have already completed the demographic survey for this participant number. Redirecting to home...',
-            [{ 
-              text: 'OK', 
-              onPress: () => {
-                setDemographicSurveyCompleted(true);
-              }
-            }]
-          );
-          return;
-        }
-      } catch (error) {
-        console.error('Error checking existing survey:', error);
-      } finally {
-        setIsCheckingExistingSurvey(false);
-      }
-    };
-
-    checkExistingSurvey();
-  }, [participantNumber]);
 
   const handleResponse = (questionId: string, value: string, otherValue?: string) => {
     setResponses(prev => ({
@@ -140,7 +102,6 @@ export const DemographicSurveyScreen: React.FC<Props> = ({ navigation }) => {
         night_shifts_other: otherResponses.nightShiftsPerMonthOther,
         place_of_residence: responses.placeOfResidence,
         residence_other: otherResponses.placeOfResidenceOther,
-        contact_number: responses.contactNumber,
       };
 
       // Submit to database
@@ -170,53 +131,22 @@ export const DemographicSurveyScreen: React.FC<Props> = ({ navigation }) => {
   const answeredCount = DEMOGRAPHIC_QUESTIONS.filter(q => q.required && getResponseValue(q.id)).length;
   const progressRatio = totalQuestions === 0 ? 0 : answeredCount / totalQuestions;
 
-  // Show loading while checking for existing survey
-  if (isCheckingExistingSurvey) {
-    return (
-      <View style={styles.container}>
-        <LinearGradient
-          colors={[theme.colors.gradientStart, theme.colors.gradientMiddle, theme.colors.gradientEnd]}
-          style={styles.backgroundGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        />
-        <View style={styles.loadingContainer}>
-          <View style={styles.loadingIconContainer}>
-            <MaterialIcons name="assignment" size={48} color={theme.colors.textOnPrimary} />
-          </View>
-          <Text style={styles.loadingTitle}>Checking Survey Status</Text>
-          <Text style={styles.loadingSubtitle}>Verifying survey completion status...</Text>
-        </View>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={[theme.colors.gradientStart, theme.colors.gradientMiddle, theme.colors.gradientEnd]}
-        style={styles.backgroundGradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      />
+      <View style={styles.background} />
       
       {/* Header Section */}
       <View style={styles.header}>
         <View style={styles.headerIconContainer}>
-          <LinearGradient
-            colors={[theme.colors.primary, theme.colors.secondary]}
-            style={styles.headerIconGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <MaterialIcons name="assignment" size={32} color={theme.colors.textOnPrimary} />
-          </LinearGradient>
+          <View style={styles.headerIconBackground}>
+            <MaterialIcons name="assignment" size={20} color={theme.colors.primary} />
+          </View>
         </View>
         <Text style={styles.title}>Demographic Survey</Text>
         <View style={styles.subtitleContainer}>
-          <Ionicons name="shield-checkmark" size={16} color={theme.colors.textOnPrimary} style={styles.privacyIcon} />
+          <Ionicons name="shield-checkmark" size={10} color={theme.colors.secondary} style={styles.privacyIcon} />
           <Text style={styles.subtitle}>
-            Dear Participants, please complete this one-time survey. Your responses will be kept confidential.
+            Complete this survey. Responses are confidential.
           </Text>
         </View>
       </View>
@@ -267,7 +197,7 @@ export const DemographicSurveyScreen: React.FC<Props> = ({ navigation }) => {
                     nonSharingPledgeAccepted && styles.checkboxChecked
                   ]}>
                     {nonSharingPledgeAccepted && (
-                      <MaterialIcons name="check" size={16} color={theme.colors.textOnPrimary} />
+                      <MaterialIcons name="check" size={16} color={theme.colors.tertiary} />
                     )}
                   </View>
                   <Text style={styles.checkboxLabel}>
@@ -279,15 +209,10 @@ export const DemographicSurveyScreen: React.FC<Props> = ({ navigation }) => {
           </View>
 
           <View style={styles.submitSection}>
-            <LinearGradient
-              colors={isComplete() 
-                ? [theme.colors.primary, theme.colors.primaryDark]
-                : [theme.colors.border, theme.colors.textSecondary]
-              }
-              style={styles.submitButtonGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-            >
+            <View style={[
+              styles.submitButtonBackground,
+              isComplete() && styles.submitButtonBackgroundActive
+            ]}>
               <PrimaryButton
                 label={isSubmitting ? "Saving..." : "Submit Survey"}
                 onPress={handleSubmit}
@@ -297,10 +222,10 @@ export const DemographicSurveyScreen: React.FC<Props> = ({ navigation }) => {
                   !isComplete() && styles.submitButtonDisabled
                 ]}
               />
-            </LinearGradient>
+            </View>
             
             <View style={styles.footerInfo}>
-              <Ionicons name="information-circle-outline" size={16} color={theme.colors.textOnPrimary} />
+              <Ionicons name="information-circle-outline" size={16} color={theme.colors.secondary} />
               <Text style={styles.footerText}>
                 Complete all required questions and accept the pledge to submit your survey.
               </Text>
@@ -316,12 +241,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  backgroundGradient: {
+  background: {
     position: 'absolute',
     left: 0,
     right: 0,
     top: 0,
     bottom: 0,
+    backgroundColor: theme.colors.secondary,
   },
   
   // Loading styles
@@ -338,42 +264,43 @@ const styles = StyleSheet.create({
   loadingTitle: {
     fontSize: 24,
     fontFamily: theme.typography.fontFamily.bold,
-    color: theme.colors.textOnPrimary,
+    color: theme.colors.primary,
     textAlign: 'center',
     marginBottom: theme.spacing.sm,
   },
   loadingSubtitle: {
     fontSize: 16,
     fontFamily: theme.typography.fontFamily.regular,
-    color: theme.colors.textOnPrimary,
+    color: theme.colors.text,
     textAlign: 'center',
     opacity: 0.8,
   },
   
   // Header styles
   header: {
-    paddingTop: theme.spacing.xxxl,
-    paddingHorizontal: theme.spacing.xl,
-    paddingBottom: theme.spacing.lg,
+    paddingTop: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.md,
+    paddingBottom: theme.spacing.xs,
     alignItems: 'center',
   },
   headerIconContainer: {
-    marginBottom: theme.spacing.lg,
+    marginBottom: theme.spacing.xs,
   },
-  headerIconGradient: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+  headerIconBackground: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    ...theme.shadows.lg,
+    backgroundColor: theme.colors.tertiary,
+    ...theme.shadows.md,
   },
   title: {
-    fontSize: 28,
+    fontSize: 18,
     fontFamily: theme.typography.fontFamily.bold,
-    color: theme.colors.textOnPrimary,
+    color: theme.colors.primary,
     textAlign: 'center',
-    marginBottom: theme.spacing.md,
+    marginBottom: theme.spacing.xs,
     textShadowColor: 'rgba(0,0,0,0.1)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
@@ -382,18 +309,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'center',
-    paddingHorizontal: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.md,
   },
   privacyIcon: {
-    marginRight: theme.spacing.sm,
-    marginTop: 2,
+    marginRight: theme.spacing.xs,
+    marginTop: 1,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 11,
     fontFamily: theme.typography.fontFamily.regular,
-    color: theme.colors.textOnPrimary,
+    color: theme.colors.text,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 14,
     opacity: 0.9,
     flex: 1,
   },
@@ -401,7 +328,7 @@ const styles = StyleSheet.create({
   // Content styles
   contentContainer: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.tertiary,
     borderTopLeftRadius: theme.radii.xl,
     borderTopRightRadius: theme.radii.xl,
     ...theme.shadows.lg,
@@ -416,13 +343,13 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.xxxl,
   },
   questionCard: {
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.background,
     borderRadius: theme.radii.lg,
     padding: theme.spacing.lg,
     marginBottom: theme.spacing.lg,
     ...theme.shadows.md,
     borderWidth: 1,
-    borderColor: theme.colors.borderLight,
+    borderColor: theme.colors.secondary,
     transform: [{ scale: 1 }],
   },
   
@@ -432,11 +359,11 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.lg,
     marginBottom: theme.spacing.xl,
     padding: theme.spacing.lg,
-    backgroundColor: theme.colors.surfaceVariant,
+    backgroundColor: theme.colors.background,
     borderRadius: theme.radii.lg,
     ...theme.shadows.md,
     borderWidth: 1,
-    borderColor: theme.colors.borderLight,
+    borderColor: theme.colors.secondary,
   },
   progressText: {
     fontSize: 16,
@@ -447,7 +374,7 @@ const styles = StyleSheet.create({
   },
   progressBarBackground: {
     height: 10,
-    backgroundColor: theme.colors.border,
+    backgroundColor: theme.colors.secondary,
     borderRadius: theme.radii.md,
     overflow: 'hidden',
   },
@@ -464,7 +391,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   pledgeCard: {
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.background,
     borderRadius: theme.radii.lg,
     borderWidth: 2,
     borderColor: theme.colors.primary,
@@ -476,7 +403,7 @@ const styles = StyleSheet.create({
     padding: theme.spacing.lg,
     paddingBottom: theme.spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.borderLight,
+    borderBottomColor: theme.colors.secondary,
   },
   pledgeTitle: {
     fontSize: 18,
@@ -527,10 +454,14 @@ const styles = StyleSheet.create({
   submitSection: {
     padding: theme.spacing.lg,
   },
-  submitButtonGradient: {
+  submitButtonBackground: {
+    backgroundColor: theme.colors.secondary,
     borderRadius: theme.radii.lg,
     marginBottom: theme.spacing.lg,
     ...theme.shadows.md,
+  },
+  submitButtonBackgroundActive: {
+    backgroundColor: theme.colors.primary,
   },
   submitButton: {
     backgroundColor: 'transparent',
@@ -550,7 +481,7 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 12,
     fontFamily: theme.typography.fontFamily.regular,
-    color: theme.colors.textSecondary,
+    color: theme.colors.text,
     textAlign: 'center',
     lineHeight: 16,
     marginLeft: theme.spacing.sm,

@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   secondaryButton: {
     backgroundColor: theme.colors.buttonSecondary,
     borderWidth: 1,
-    borderColor: theme.colors.buttonSecondaryBorder,
+    borderColor: theme.colors.buttonSecondary,
   },
   secondaryButtonText: {
     color: theme.colors.buttonSecondaryText,

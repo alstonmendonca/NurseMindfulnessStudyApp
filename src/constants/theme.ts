@@ -1,47 +1,41 @@
 export const colors = {
-  // Primary colors from the gradient palette
-  primary: '#7BDFF2', // Light blue from the gradient
-  primaryDark: '#B2F7EF', // Mint green from the gradient
-  secondary: '#F7D6E0', // Light pink from the gradient
-  secondaryDark: '#F2B5D4', // Darker pink from the gradient
-  accent: '#EFF7F6', // Very light mint
+  // New color palette based on user requirements
+  primary: '#9c7c5d',      // Tan - for highlights and interactive elements
+  secondary: '#bbcacf',    // Light blue - for sound cards
+  tertiary: '#2b4961',     // Dark blue - for background
   
   // Background and surface colors
-  background: '#FFFFFF',
-  surface: '#F8FFFE',
-  surfaceVariant: '#F5F9F8',
+  background: '#2b4961',   // Dark blue background
+  surface: '#bbcacf',      // Light blue for cards
+  surfaceVariant: '#bbcacf', // Light blue
   
   // Text colors
-  text: '#2D3748',
-  mutedText: '#718096',
-  textSecondary: '#4A5568',
-  textLight: '#A0AEC0',
-  textOnPrimary: '#FFFFFF',
-  textOnSecondary: '#2D3748',
+  text: '#f9f9f9',         // Off-white primary text
+  textSecondary: '#f9f9f9', // Off-white secondary text
+  textLight: '#f9f9f9',    // Off-white light text
+  textOnPrimary: '#2b4961', // Dark blue on tan buttons
+  textOnSecondary: '#2b4961', // Dark blue on light blue
+  mutedText: '#bbcacf',    // Light blue for muted text
   
   // UI colors
-  border: '#E2E8F0',
-  borderLight: '#F7FAFC',
-  overlay: '#2D374880',
+  border: '#bbcacf',       // Light blue borders
+  borderLight: '#bbcacf',  // Light blue light borders
+  overlay: '#2b4961',      // Dark blue overlay
+  
+  // Additional properties for backward compatibility
+  primaryDark: '#9c7c5d', // Tan
   
   // Button colors
-  button: '#7BDFF2',
-  buttonText: '#FFFFFF',
-  buttonSecondary: '#F7D6E0',
-  buttonSecondaryBg: '#F7D6E0',
-  buttonSecondaryText: '#2D3748',
-  buttonSecondaryBorder: '#F2B5D4',
+  button: '#9c7c5d',       // Tan buttons
+  buttonText: '#f9f9f9',   // Off-white text on buttons
+  buttonSecondary: '#bbcacf', // Light blue secondary buttons
+  buttonSecondaryText: '#2b4961', // Dark blue text on secondary buttons
   
   // Status colors
-  success: '#48BB78',
-  warning: '#ED8936',
-  error: '#E53E3E',
-  info: '#3182CE',
-  
-  // Gradient colors for special effects
-  gradientStart: '#7BDFF2',
-  gradientMiddle: '#B2F7EF',
-  gradientEnd: '#F7D6E0',
+  success: '#9c7c5d',      // Tan
+  warning: '#bbcacf',      // Light blue
+  error: '#9c7c5d',        // Tan
+  info: '#bbcacf',         // Light blue
 };
 
 export const spacing = {

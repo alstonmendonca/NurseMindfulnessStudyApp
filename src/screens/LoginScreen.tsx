@@ -130,15 +130,6 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
             </View>
           </View>
 
-          {/* Footer Section */}
-          <View style={styles.footer}>
-            <View style={styles.footerIconContainer}>
-              <Ionicons name="shield-checkmark-outline" size={16} color={theme.colors.textSecondary} />
-            </View>
-            <Text style={styles.footerText}>
-              This app is part of a research study to support nurses' mental health and well-being
-            </Text>
-          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </View>

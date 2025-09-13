@@ -72,6 +72,5 @@ export interface DemographicSurvey {
   night_shifts_other?: string;
   place_of_residence: string;
   residence_other?: string;
-  contact_number: string;
   created_at: string;
 }

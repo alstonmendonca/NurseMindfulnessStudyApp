@@ -24,7 +24,6 @@ export interface DemographicSurveyData {
   nightShiftsOther?: string;
   placeOfResidence: string;
   residenceOther?: string;
-  contactNumber: string;
 }
 
 export const DEMOGRAPHIC_QUESTIONS: DemographicQuestion[] = [
@@ -174,12 +173,6 @@ export const DEMOGRAPHIC_QUESTIONS: DemographicQuestion[] = [
       'PG Hostel',
       'Any other'
     ],
-    required: true,
-  },
-  {
-    id: 'contactNumber',
-    text: 'Contact Number',
-    type: 'text',
     required: true,
   },
 ];

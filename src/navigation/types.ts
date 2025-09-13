@@ -6,6 +6,7 @@ export type RootStackParamList = {
 };
 
 export type MainStackParamList = {
+  Loading: undefined;
   Home: undefined;
   DemographicSurvey: undefined;
 };

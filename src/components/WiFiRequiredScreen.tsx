@@ -4,11 +4,11 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../constants/theme';
 import { networkManager, ConnectivityState } from '../utils/networkManager';
 
-interface WiFiRequiredScreenProps {
-  onWiFiConnected?: () => void;
+interface InternetRequiredScreenProps {
+  onInternetConnected?: () => void;
 }
 
-export const WiFiRequiredScreen: React.FC<WiFiRequiredScreenProps> = ({ onWiFiConnected }) => {
+export const WiFiRequiredScreen: React.FC<InternetRequiredScreenProps> = ({ onInternetConnected }) => {
   const [connectivityState, setConnectivityState] = useState<ConnectivityState>({
     isConnected: false,
     isWiFi: false,
@@ -27,9 +27,9 @@ export const WiFiRequiredScreen: React.FC<WiFiRequiredScreenProps> = ({ onWiFiCo
         setConnectivityState(initialState);
         setIsChecking(false);
 
-        // If WiFi is already connected, proceed
-        if (networkManager.isWiFiConnected()) {
-          onWiFiConnected?.();
+        // If internet is already connected, proceed
+        if (networkManager.hasInternetConnection()) {
+          onInternetConnected?.();
           return;
         }
       }
@@ -39,9 +39,9 @@ export const WiFiRequiredScreen: React.FC<WiFiRequiredScreenProps> = ({ onWiFiCo
         if (mounted) {
           setConnectivityState(state);
           
-          // Auto-proceed when WiFi becomes available
-          if (networkManager.isWiFiConnected()) {
-            onWiFiConnected?.();
+          // Auto-proceed when internet becomes available
+          if (networkManager.hasInternetConnection()) {
+            onInternetConnected?.();
           }
         }
       };
@@ -59,36 +59,47 @@ export const WiFiRequiredScreen: React.FC<WiFiRequiredScreenProps> = ({ onWiFiCo
       mounted = false;
       cleanup.then(cleanupFn => cleanupFn && cleanupFn());
     };
-  }, [onWiFiConnected]);
+  }, [onInternetConnected]);
 
   const handleRetryConnection = async () => {
     setIsChecking(true);
     
-    // Wait for WiFi connection with 10 second timeout
-    const connected = await networkManager.waitForWiFiConnection(10000);
+    // Check for internet connection with 10 second timeout
+    const startTime = Date.now();
+    const timeout = 10000;
     
-    setIsChecking(false);
+    const checkConnection = () => {
+      if (networkManager.hasInternetConnection()) {
+        setIsChecking(false);
+        onInternetConnected?.();
+        return;
+      }
+      
+      if (Date.now() - startTime < timeout) {
+        setTimeout(checkConnection, 1000);
+      } else {
+        setIsChecking(false);
+      }
+    };
     
-    if (connected) {
-      onWiFiConnected?.();
-    }
+    checkConnection();
   };
 
   const getConnectionStatus = () => {
     if (isChecking) {
-      return { icon: 'wifi-off', message: 'Checking WiFi connection...', color: theme.colors.textSecondary };
+      return { icon: 'wifi-off', message: 'Checking internet connection...', color: theme.colors.textSecondary };
     }
 
     if (!connectivityState.isConnected) {
       return { icon: 'wifi-off', message: 'No internet connection', color: theme.colors.error };
     }
 
-    if (!connectivityState.isWiFi) {
-      return { icon: 'signal-cellular-4-bar', message: 'Mobile data detected. WiFi required.', color: theme.colors.warning };
+    if (connectivityState.isInternetReachable === false) {
+      return { icon: 'wifi-off', message: 'Connected but no internet access', color: theme.colors.warning };
     }
 
-    if (connectivityState.isInternetReachable === false) {
-      return { icon: 'wifi-off', message: 'WiFi connected but no internet access', color: theme.colors.warning };
+    if (connectivityState.isInternetReachable === true) {
+      return { icon: 'wifi', message: 'Internet connected', color: theme.colors.success };
     }
 
     return { icon: 'wifi', message: 'Connecting...', color: theme.colors.success };
@@ -99,13 +110,13 @@ export const WiFiRequiredScreen: React.FC<WiFiRequiredScreenProps> = ({ onWiFiCo
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        {/* WiFi Icon */}
+        {/* Internet Icon */}
         <View style={[styles.iconContainer, { backgroundColor: `${status.color}15` }]}>
           <MaterialIcons name={status.icon as any} size={80} color={status.color} />
         </View>
 
         {/* Title */}
-        <Text style={styles.title}>WiFi Connection Required</Text>
+        <Text style={styles.title}>Internet Connection Required</Text>
 
         {/* Status Message */}
         <Text style={[styles.statusMessage, { color: status.color }]}>
@@ -114,8 +125,8 @@ export const WiFiRequiredScreen: React.FC<WiFiRequiredScreenProps> = ({ onWiFiCo
 
         {/* Description */}
         <Text style={styles.description}>
-          This app requires a stable WiFi connection to ensure accurate data synchronization 
-          and the best user experience for the mindfulness study.
+          This app requires a stable internet connection (WiFi or mobile data) to ensure 
+          accurate data synchronization and the best user experience for the mindfulness study.
         </Text>
 
         {/* Connection Details */}
@@ -131,20 +142,22 @@ export const WiFiRequiredScreen: React.FC<WiFiRequiredScreenProps> = ({ onWiFiCo
           
           <View style={styles.detailRow}>
             <MaterialIcons 
-              name={connectivityState.isWiFi ? "check-circle" : "cancel"} 
-              size={20} 
-              color={connectivityState.isWiFi ? theme.colors.success : theme.colors.error} 
-            />
-            <Text style={styles.detailText}>WiFi Network</Text>
-          </View>
-          
-          <View style={styles.detailRow}>
-            <MaterialIcons 
               name={connectivityState.isInternetReachable ? "check-circle" : "cancel"} 
               size={20} 
               color={connectivityState.isInternetReachable ? theme.colors.success : theme.colors.error} 
             />
             <Text style={styles.detailText}>Internet Access</Text>
+          </View>
+          
+          <View style={styles.detailRow}>
+            <MaterialIcons 
+              name={connectivityState.isWiFi ? "wifi" : "signal-cellular-4-bar"} 
+              size={20} 
+              color={connectivityState.isConnected ? theme.colors.success : theme.colors.textSecondary} 
+            />
+            <Text style={styles.detailText}>
+              {connectivityState.isWiFi ? "WiFi Network" : "Mobile Data"}
+            </Text>
           </View>
         </View>
 
@@ -166,7 +179,7 @@ export const WiFiRequiredScreen: React.FC<WiFiRequiredScreenProps> = ({ onWiFiCo
 
         {/* Help Text */}
         <Text style={styles.helpText}>
-          Please ensure you're connected to a WiFi network with internet access and try again.
+          Please ensure you're connected to the internet (via WiFi or mobile data) and try again.
         </Text>
       </View>
     </View>
