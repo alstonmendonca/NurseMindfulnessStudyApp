@@ -11,30 +11,26 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export type NotificationType = 
-  | 'daily-checkin'
-  | 'motivation';
+export type NotificationType = 'calming-reminder';
 
 const NOTIFICATION_CONTENT = {
-  'daily-checkin': {
-    title: 'How are you today?',
-    body: 'Take a moment to check in with yourself.',
-  },
-  'motivation': {
-    title: 'Daily Inspiration',
-    body: 'Your compassion makes a difference every day.',
+  'calming-reminder': {
+    title: 'Take a Moment',
+    body: 'Feeling stressed? Listen to some calming sounds',
   },
 };
 
-const MOTIVATIONAL_QUOTES = [
-  "Your compassion makes a difference every day.",
-  "Small acts of kindness create big ripples.",
-  "You bring hope and healing to others.",
-  "Your strength inspires those around you.",
-  "Today's challenges build tomorrow's expertise.",
-  "You make the impossible possible.",
-  "Your dedication changes lives.",
-  "Every day you make a difference.",
+const CALMING_MESSAGES = [
+  'Feeling stressed? Listen to some calming sounds',
+  'Take a break and enjoy some peaceful nature sounds',
+  'Your mind deserves rest. Try our soothing audio collection',
+  'Overwhelmed? Let calming sounds restore your peace',
+  'Time for tranquility. Explore our relaxing soundscapes',
+  'Stress relief is just a tap away. Listen to calming sounds',
+  'Give yourself the gift of calm with our peaceful audio',
+  'Feeling tense? Unwind with some gentle, soothing sounds',
+  'Your well-being matters. Take a moment for calming sounds',
+  'Need a mental reset? Our relaxing sounds are here to help',
 ];
 
 export const setupNotifications = async () => {
@@ -75,8 +71,8 @@ const getNextTriggerDate = (targetHour: number, targetMinute: number = 0): Date 
   return next;
 };
 
-export const scheduleDailyCheckInReminder = async () => {
-  const nextTime = getNextTriggerDate(10); // 10 AM
+export const scheduleDailyCalmingReminder = async () => {
+  const nextTime = getNextTriggerDate(12); // 12 PM
 
   // Schedule for the next 30 days since Android doesn't support indefinite repeating
   const notifications = Array.from({ length: 30 }, (_, i) => {
@@ -85,35 +81,13 @@ export const scheduleDailyCheckInReminder = async () => {
     const seconds = Math.floor((date.getTime() - Date.now()) / 1000);
     
     if (seconds > 0) {
-      return Notifications.scheduleNotificationAsync({
-        content: NOTIFICATION_CONTENT['daily-checkin'],
-        trigger: {
-          seconds,
-        } as Notifications.NotificationTriggerInput,
-      });
-    }
-    return Promise.resolve();
-  });
-
-  await Promise.all(notifications.filter(Boolean));
-  return 'daily-checkin';
-};
-
-export const scheduleMotivationalQuote = async () => {
-  const quoteIndex = Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length);
-  const nextTime = getNextTriggerDate(8); // 8 AM
-  
-  // Schedule for the next 30 days since Android doesn't support indefinite repeating
-  const notifications = Array.from({ length: 30 }, (_, i) => {
-    const date = new Date(nextTime);
-    date.setDate(date.getDate() + i);
-    const seconds = Math.floor((date.getTime() - Date.now()) / 1000);
-
-    if (seconds > 0) {
+      // Randomize the message for each day
+      const randomMessage = CALMING_MESSAGES[Math.floor(Math.random() * CALMING_MESSAGES.length)];
+      
       return Notifications.scheduleNotificationAsync({
         content: {
-          ...NOTIFICATION_CONTENT['motivation'],
-          body: MOTIVATIONAL_QUOTES[(quoteIndex + i) % MOTIVATIONAL_QUOTES.length],
+          ...NOTIFICATION_CONTENT['calming-reminder'],
+          body: randomMessage,
         },
         trigger: {
           seconds,
@@ -124,8 +98,7 @@ export const scheduleMotivationalQuote = async () => {
   });
 
   await Promise.all(notifications.filter(Boolean));
-  return 'motivation';
-// Removed stray closing braces
+  return 'calming-reminder';
 };
 
 export const setupAllNotifications = async () => {
@@ -135,9 +108,8 @@ export const setupAllNotifications = async () => {
   // Cancel any existing notifications
   await Notifications.cancelAllScheduledNotificationsAsync();
 
-  // Schedule daily reminders
-  await scheduleDailyCheckInReminder();
-  await scheduleMotivationalQuote();
+  // Schedule daily calming reminder at 12 PM
+  await scheduleDailyCalmingReminder();
 };
 
 export const clearAllNotifications = async () => {

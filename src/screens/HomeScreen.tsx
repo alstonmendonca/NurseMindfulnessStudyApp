@@ -8,6 +8,8 @@ import { theme } from '../constants/theme';
 import { Screen } from '../components/Screen';
 import { Audio, Video, ResizeMode } from 'expo-av';
 import { Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
+import { supabase } from '../utils/supabase';
+import { appUsageTracker } from '../utils/appUsageTracker';
 
 const { width, height } = Dimensions.get('window');
 
@@ -147,64 +149,441 @@ const mediaItems: MediaItem[] = [
     type: 'audio',
     category: 'ambient',
   },
+  
+  // Meditation Music
   {
     id: 'meditation-1',
     name: 'Meditation Audio v1',
     description: 'Foundational mindfulness meditation audio',
     url: 'https://drive.google.com/uc?export=download&id=1MrEzLQf9cPhwEVZUCkiXDEoOg9DMUmuH',
     type: 'audio',
-    category: 'ambient',
+    category: 'meditation',
   },
   {
     id: 'meditation-2',
     name: 'Meditation Audio v2',
-    description: 'Intermediate meditation for deeper practice',
+    description: 'Meditation for deeper practice',
     url: 'https://drive.google.com/uc?export=download&id=1p2tpFTnMaruPKPqirl2gRCBtQ-f3maDQ',
     type: 'audio',
-    category: 'ambient',
+    category: 'meditation',
   },
   {
     id: 'meditation-3',
     name: 'Meditation Audio v3',
-    description: 'Advanced meditation for experienced practitioners',
+    description: 'Meditation Audio for calmer mind',
     url: 'https://drive.google.com/uc?export=download&id=1mU9Yr6aAgWJBAisac6baJgPr0iJZbGu7',
     type: 'audio',
-    category: 'ambient',
+    category: 'meditation',
+  },
+  {
+    id: 'sound-bath-5min',
+    name: '5 Minute Sound Bath Meditation',
+    description: 'Crystal singing bowls and Tibetan bowls for deep relaxation',
+    url: 'https://drive.google.com/uc?export=download&id=1ios3BHt5JqceXQGNUHq2ohS845IAOgVy',
+    type: 'audio',
+    category: 'meditation',
+  },
+  {
+    id: 'inner-peace-5min',
+    name: '5 Minute Inner Peace Meditation',
+    description: 'Meditation music for instant inner peace and calm',
+    url: 'https://drive.google.com/uc?export=download&id=14HUaS3arZL_1nNfgfx0kYLRubLByXkFQ',
+    type: 'audio',
+    category: 'meditation',
+  },
+  {
+    id: 'forest-birds-10min',
+    name: '10 Min Forest Morning Birds',
+    description: 'Nature sounds meditation - birds chirping calms the nervous system',
+    url: 'https://drive.google.com/uc?export=download&id=1HG6QpXbbqIl6HZQvdxB3PLcs7RtnFXUG',
+    type: 'audio',
+    category: 'meditation',
+  },
+  {
+    id: 'morning-birds-10min',
+    name: '10 Min Morning Relaxation with Birds',
+    description: 'Morning relaxation music with peaceful bird songs',
+    url: 'https://drive.google.com/uc?export=download&id=1z342eFasOeMLAs92wQEWTsbecguDVJPt',
+    type: 'audio',
+    category: 'meditation',
   },
   
   // Guided Breathing Videos (Only these are videos)
   {
     id: 'breathing-1',
-    name: 'Guided Breathing v1',
-    description: 'Essential breathing techniques for beginners',
+    name: 'Box Square Breathing',
+    description: 'A short relaxation exercise to reduce stress and anxiety.',
     url: 'https://drive.google.com/uc?export=download&id=1KQ6K--SAVrR1w6sZdOcxTv3xiFboiw2V',
     type: 'video',
-    duration: '5 min',
+    duration: '1 min',
   },
   {
     id: 'breathing-2',
-    name: 'Guided Breathing v2',
-    description: 'Advanced breathing exercises for deeper calm',
+    name: '4-7-8 Breathing',
+    description: 'Breathing exercise to improve focus and regulate emotions',
     url: 'https://drive.google.com/uc?export=download&id=11c_hmjSimLnJV7Kh--cfF22sE-kYYcA7',
     type: 'video',
-    duration: '8 min',
+    duration: '1 min',
   },
   {
     id: 'breathing-3',
-    name: 'Guided Breathing v3',
-    description: 'Complete breathing meditation journey',
+    name: '5 minutes Guided Breathing',
+    description: 'A 5-minute guided breathing exercise',
     url: 'https://drive.google.com/uc?export=download&id=1g9pVLqHbW92hZIQpX8b3YV7jz6QM7izH',
     type: 'video',
-    duration: '10 min',
+    duration: '5 min',
+  }
+];
+
+// Lesson data structure for the Learn section
+interface Lesson {
+  id: string;
+  title: string;
+  objective: string;
+  keyPoints: string[];
+  practice: {
+    duration: string;
+    instructions: string;
+  };
+}
+
+interface Chapter {
+  id: string;
+  title: string;
+  lessons: Lesson[];
+}
+
+const learningContent: Chapter[] = [
+  {
+    id: 'foundations',
+    title: 'Foundations of Meditation for Healthcare Professionals',
+    lessons: [
+      {
+        id: 'intro-meditation',
+        title: 'Lesson 1: Introduction to Meditation',
+        objective: 'Understand what meditation is and why it matters.',
+        keyPoints: [
+          'Meditation is the practice of training attention and awareness.',
+          'Benefits include stress reduction, improved focus, emotional balance, and better sleep.',
+          'For healthcare workers, meditation supports resilience against burnout and compassion fatigue.'
+        ],
+        practice: {
+          duration: '2 min',
+          instructions: 'Sit comfortably, close your eyes, and focus on your breath for 5 cycles. Notice any distractions without judgment.'
+        }
+      },
+      {
+        id: 'breathing-awareness',
+        title: 'Lesson 2: Breathing Awareness',
+        objective: 'Learn to anchor attention using the breath.',
+        keyPoints: [
+          'The breath is always available and can help regulate stress.',
+          'Deep breathing activates the parasympathetic nervous system (rest & digest).'
+        ],
+        practice: {
+          duration: '3 min',
+          instructions: 'Inhale slowly for 4 counts. Hold for 2 counts. Exhale for 6 counts. Repeat for 5 rounds.'
+        }
+      },
+      {
+        id: 'body-scan',
+        title: 'Lesson 3: Body Scan Meditation',
+        objective: 'Develop awareness of physical sensations to release tension.',
+        keyPoints: [
+          'Nurses and healthcare workers often hold stress in the body unconsciously.',
+          'Scanning from head to toe helps identify areas of tightness and promotes relaxation.'
+        ],
+        practice: {
+          duration: '5 min',
+          instructions: 'Close your eyes. Bring attention to your head, then slowly move down through shoulders, chest, arms, abdomen, legs, and feet. Simply notice sensations (warmth, tightness, tingling) without trying to change them.'
+        }
+      },
+      {
+        id: 'loving-kindness',
+        title: 'Lesson 4: Loving-Kindness Meditation',
+        objective: 'Cultivate compassion for self and others.',
+        keyPoints: [
+          'Healthcare professionals often prioritize others and neglect themselves.',
+          'Loving-kindness (Metta) builds empathy, patience, and emotional strength.'
+        ],
+        practice: {
+          duration: '4 min',
+          instructions: 'Repeat silently: "May I be healthy. May I be safe. May I be at peace." Extend the same wishes to a colleague, a patient, and finally all beings.'
+        }
+      },
+      {
+        id: 'mindfulness-daily',
+        title: 'Lesson 5: Mindfulness in Daily Practice',
+        objective: 'Integrate meditation into work and personal life.',
+        keyPoints: [
+          'Even short pauses (1–2 minutes) during a shift can reset the mind.',
+          'Mindful walking, mindful eating, or mindful handwashing are practical ways to practice.'
+        ],
+        practice: {
+          duration: '2-3 min',
+          instructions: 'While washing hands, focus on the sensation of water, soap, and movement instead of rushing.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'stress-burnout',
+    title: 'Chapter 1: Stress & Burnout Management',
+    lessons: [
+      {
+        id: 'stress-responses',
+        title: 'Lesson 1: Understanding Stress Responses',
+        objective: 'Recognize and understand how stress affects the body and mind.',
+        keyPoints: [
+          'Stress activates the body\'s "fight or flight" mode.',
+          'Chronic stress in healthcare can lead to burnout, fatigue, and reduced compassion.',
+          'Awareness of stress signals (tight shoulders, racing thoughts, irritability) is the first step to managing it.',
+          'Not all stress is harmful—small amounts can boost alertness if managed well.'
+        ],
+        practice: {
+          duration: '2 min',
+          instructions: 'Place your hand on your chest, take 3 slow breaths, and notice how your body feels before and after.'
+        }
+      },
+      {
+        id: 'quick-reset',
+        title: 'Lesson 2: Quick Reset Practices During Shifts',
+        objective: 'Learn rapid techniques to reset your nervous system during work.',
+        keyPoints: [
+          'Even 30–60 seconds can reset your nervous system.',
+          'Short pauses help reduce mistakes and improve decision-making.',
+          'A "reset ritual" (breath, stretch, posture check) can be done between patients.',
+          'This prevents stress from building up unnoticed.'
+        ],
+        practice: {
+          duration: '1 min',
+          instructions: 'Stop, close your eyes, inhale deeply, roll your shoulders back, exhale fully, then open your eyes with renewed focus.'
+        }
+      },
+      {
+        id: 'grounding-techniques',
+        title: 'Lesson 3: Grounding Techniques for Overwhelm',
+        objective: 'Use grounding to stay present during intense situations.',
+        keyPoints: [
+          'Grounding pulls attention away from racing thoughts into the present.',
+          'Useful during emergencies or emotionally intense moments.',
+          'Techniques include sensory awareness and touch.',
+          'Helps prevent feeling "stuck in your head."'
+        ],
+        practice: {
+          duration: '2 min',
+          instructions: 'The 5-4-3-2-1 Method — Notice 5 things you see, 4 you feel, 3 you hear, 2 you smell, 1 you taste.'
+        }
+      },
+      {
+        id: 'compassion-fatigue',
+        title: 'Lesson 4: Managing Compassion Fatigue',
+        objective: 'Protect emotional energy and restore empathy capacity.',
+        keyPoints: [
+          'Constant exposure to suffering can reduce emotional energy.',
+          'Recognizing signs (numbness, irritability, detachment) is important.',
+          'Small self-care moments restore empathy capacity.',
+          'Sharing experiences with peers reduces emotional burden.'
+        ],
+        practice: {
+          duration: '3 min',
+          instructions: 'Silently repeat: "I acknowledge my effort. I am human. I deserve care too."'
+        }
+      },
+      {
+        id: 'healthy-boundaries',
+        title: 'Lesson 5: Creating Healthy Boundaries',
+        objective: 'Learn to protect energy and prevent burnout through boundaries.',
+        keyPoints: [
+          'Boundaries protect energy and prevent burnout.',
+          'Saying "no" respectfully is an act of self-care.',
+          'Clear separation of work and personal life improves resilience.',
+          'Micro-boundaries (no phones at meals, deep breaths before entering work) add up.'
+        ],
+        practice: {
+          duration: '2 min',
+          instructions: 'At the end of your shift, close your eyes and imagine leaving all work worries at the hospital door before going home.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'mindful-communication',
+    title: 'Chapter 2: Mindful Communication',
+    lessons: [
+      {
+        id: 'active-listening',
+        title: 'Lesson 1: Active Listening with Patients',
+        objective: 'Develop deeper listening skills to improve patient care.',
+        keyPoints: [
+          'Listening fully helps patients feel valued and safe.',
+          'Silence can be as powerful as words.',
+          'Avoid multitasking during patient interactions when possible.',
+          'Reflecting back what you hear builds trust.'
+        ],
+        practice: {
+          duration: '2 min',
+          instructions: 'In your next conversation, pause for 2 breaths before replying. Notice if it changes the tone.'
+        }
+      },
+      {
+        id: 'responding-vs-reacting',
+        title: 'Lesson 2: Responding vs. Reacting in Tense Situations',
+        objective: 'Learn to respond mindfully rather than react impulsively.',
+        keyPoints: [
+          'Reacting is impulsive; responding is mindful and intentional.',
+          'Pausing creates space to choose words wisely.',
+          'Emotional awareness helps prevent escalation.',
+          'A calm response models stability for patients and colleagues.'
+        ],
+        practice: {
+          duration: '1 min',
+          instructions: 'When feeling triggered, silently say "Pause. Breathe. Respond." before speaking.'
+        }
+      },
+      {
+        id: 'compassionate-speech',
+        title: 'Lesson 3: Compassionate Speech with Colleagues',
+        objective: 'Foster positive team communication and reduce conflict.',
+        keyPoints: [
+          'Stress can cause harsh words, even unintentionally.',
+          'Compassionate speech fosters teamwork and reduces conflict.',
+          'Using "I" statements avoids blame.',
+          'Gratitude and encouragement improve morale.'
+        ],
+        practice: {
+          duration: '2 min',
+          instructions: 'Pick one colleague today and thank them for something specific they did.'
+        }
+      },
+      {
+        id: 'de-escalation',
+        title: 'Lesson 4: De-escalation Mindfulness Tools',
+        objective: 'Use mindfulness to calm tense situations.',
+        keyPoints: [
+          'Patients and families may express fear through anger.',
+          'Calm tone and body language are more effective than words alone.',
+          'Slow breathing regulates your nervous system and influences theirs.',
+          'Non-judgmental presence defuses tension.'
+        ],
+        practice: {
+          duration: '2 min',
+          instructions: 'Inhale deeply, exhale slowly twice before entering a difficult conversation.'
+        }
+      },
+      {
+        id: 'empathy-boundaries',
+        title: 'Lesson 5: Practicing Empathy without Over-Identification',
+        objective: 'Balance compassionate care with emotional self-protection.',
+        keyPoints: [
+          'Empathy is feeling with others, not becoming overwhelmed by their emotions.',
+          'Over-identification can drain energy and cause emotional spillover.',
+          'Mindful empathy balances care with self-preservation.',
+          'Compassion means showing up fully without absorbing suffering.'
+        ],
+        practice: {
+          duration: '3 min',
+          instructions: 'Visualize a protective boundary around yourself—open enough to care, firm enough to stay grounded.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'sleep-recovery',
+    title: 'Chapter 3: Sleep & Recovery',
+    lessons: [
+      {
+        id: 'importance-rest',
+        title: 'Lesson 1: The Importance of Rest in Healthcare',
+        objective: 'Understand why rest is crucial for healthcare professionals.',
+        keyPoints: [
+          'Sleep restores body, mind, and emotional stability.',
+          'Night shifts and long hours often disrupt natural rhythms.',
+          'Sleep debt increases errors and reduces compassion.',
+          'Prioritizing rest is part of professional responsibility.'
+        ],
+        practice: {
+          duration: '2 min',
+          instructions: 'Before bed, place your phone away and take 5 slow breaths to signal "sleep mode" to your body.'
+        }
+      },
+      {
+        id: 'evening-rituals',
+        title: 'Lesson 2: Evening Mindfulness Rituals',
+        objective: 'Create consistent routines to improve sleep quality.',
+        keyPoints: [
+          'A consistent wind-down routine improves sleep quality.',
+          'Dim lights, reduce screen time, and engage in calming activities.',
+          'Short meditation before bed helps release mental clutter.',
+          'Rituals train the body to associate cues with rest.'
+        ],
+        practice: {
+          duration: '5 min',
+          instructions: 'Try a simple gratitude journaling: write down 3 things that went well today.'
+        }
+      },
+      {
+        id: 'breathwork-sleep',
+        title: 'Lesson 3: Breathwork for Better Sleep',
+        objective: 'Use breathing techniques to prepare for restful sleep.',
+        keyPoints: [
+          'Breathing regulates the nervous system before sleep.',
+          'Slow, deep breaths reduce heart rate and calm the mind.',
+          'A regular practice conditions the body for rest.',
+          'Works especially well after late shifts.'
+        ],
+        practice: {
+          duration: '3 min',
+          instructions: 'Inhale for 4 counts, exhale for 8 counts. Continue for 5 rounds.'
+        }
+      },
+      {
+        id: 'body-scan-sleep',
+        title: 'Lesson 4: Body Scan for Bedtime Relaxation',
+        objective: 'Release physical tension to promote deeper rest.',
+        keyPoints: [
+          'Releasing physical tension promotes deeper rest.',
+          'Many nurses carry stress in shoulders, neck, and lower back.',
+          'Scanning the body directs awareness away from thoughts into sensations.',
+          'A relaxed body leads to a calmer mind.'
+        ],
+        practice: {
+          duration: '5 min',
+          instructions: 'Lie down, bring awareness from head to toe, gently noticing and relaxing each part.'
+        }
+      },
+      {
+        id: 'intrusive-thoughts',
+        title: 'Lesson 5: Letting Go of Intrusive Thoughts',
+        objective: 'Calm racing thoughts that interfere with sleep.',
+        keyPoints: [
+          'Racing thoughts are a common barrier to sleep.',
+          'Observing thoughts without engaging helps calm the mind.',
+          'Writing them down externalizes worries.',
+          'Visualization can guide the mind toward peace.'
+        ],
+        practice: {
+          duration: '3 min',
+          instructions: 'Imagine placing each thought onto a cloud, watching it drift away until the sky clears.'
+        }
+      }
+    ]
   }
 ];
 
 export const HomeScreen: React.FC<Props> = ({ navigation }) => {
-  const { logout } = useAuth();
+  const { logout, participantNumber } = useAuth();
   const [currentSound, setCurrentSound] = useState<Audio.Sound | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentMediaId, setCurrentMediaId] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<'nature' | 'ambient' | 'video'>('nature');
+  const [selectedCategory, setSelectedCategory] = useState<'nature' | 'ambient' | 'meditation' | 'video' | 'learn'>('nature');
+  
+  // Usage statistics
+  const [usageStats, setUsageStats] = useState({
+    totalDays: 0,
+    totalSessions: 0,
+    totalMinutes: 0,
+  });
   
   // Audio progress tracking
   const [audioPosition, setAudioPosition] = useState(0);
@@ -224,10 +603,124 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [currentVideo, setCurrentVideo] = useState<VideoItem | null>(null);
   const [videoStatus, setVideoStatus] = useState<any>({});
   const videoRef = useRef<Video>(null);
+  
+  // Lesson state
+  const [isLessonModalVisible, setIsLessonModalVisible] = useState(false);
+  const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
 
-  const handleLogout = async () => {
-    await logout();
+  const handleLogout = () => {
+    // Logout is now instant with fire-and-forget session ending
+    logout();
   };
+
+  // Fetch usage statistics from Supabase
+  const fetchUsageStats = async () => {
+    if (!participantNumber) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('app_usage_sessions')
+        .select('session_start, session_end, duration_minutes')
+        .eq('participant_number', participantNumber)
+        .not('session_end', 'is', null) // Only completed sessions
+        .not('duration_minutes', 'is', null)
+        .not('session_start', 'is', null); // Ensure session_start is not null
+
+      if (error) {
+        console.error('Error fetching usage stats:', error);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        // Filter out any remaining null/invalid entries for extra safety
+        const validSessions = data.filter(session => {
+          return session.session_start && 
+                 session.session_end && 
+                 session.duration_minutes !== null && 
+                 session.duration_minutes !== undefined &&
+                 session.duration_minutes > 0; // Ignore 0 or negative duration
+        });
+
+        console.log(`Found ${validSessions.length} valid sessions out of ${data.length} total`);
+
+        if (validSessions.length === 0) {
+          // No valid sessions, keep stats at 0
+          setUsageStats({
+            totalDays: 0,
+            totalSessions: 0,
+            totalMinutes: 0,
+          });
+          return;
+        }
+
+        // Calculate total sessions (only valid ones)
+        const totalSessions = validSessions.length;
+
+        // Calculate total minutes (only from valid sessions)
+        const totalMinutes = validSessions.reduce((sum, session) => {
+          const duration = parseInt(session.duration_minutes) || 0;
+          return sum + Math.max(0, duration); // Ensure no negative values
+        }, 0);
+
+        // Calculate unique days (only from valid sessions)
+        const uniqueDates = new Set();
+        validSessions.forEach(session => {
+          try {
+            if (session.session_start) {
+              const date = new Date(session.session_start);
+              // Validate the date is actually valid
+              if (!isNaN(date.getTime())) {
+                const dateString = date.toDateString();
+                uniqueDates.add(dateString);
+              }
+            }
+          } catch (dateError) {
+            console.warn('Invalid date in session:', session.session_start);
+          }
+        });
+        const totalDays = uniqueDates.size;
+
+        console.log(`Usage stats: ${totalDays} days, ${totalSessions} sessions, ${totalMinutes} minutes`);
+
+        setUsageStats({
+          totalDays: Math.max(0, totalDays),
+          totalSessions: Math.max(0, totalSessions),
+          totalMinutes: Math.max(0, totalMinutes),
+        });
+      } else {
+        // No data found, ensure stats are 0
+        setUsageStats({
+          totalDays: 0,
+          totalSessions: 0,
+          totalMinutes: 0,
+        });
+      }
+    } catch (error) {
+      console.error('Error in fetchUsageStats:', error);
+      // On error, don't update stats (keep previous values or defaults)
+    }
+  };
+
+  // Load usage stats when component mounts
+  useEffect(() => {
+    fetchUsageStats();
+  }, [participantNumber]);
+
+  // Initialize app usage tracking when HomeScreen loads
+  useEffect(() => {
+    const initializeUsageTracking = async () => {
+      if (participantNumber) {
+        try {
+          await appUsageTracker.initializeTracking(participantNumber);
+          console.log('App usage tracking started from HomeScreen');
+        } catch (error) {
+          console.error('Error starting app usage tracking:', error);
+        }
+      }
+    };
+
+    initializeUsageTracking();
+  }, [participantNumber]);
 
   // Helper function to format time in MM:SS format
   const formatTime = (milliseconds: number): string => {
@@ -292,8 +785,8 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           break;
         }
         
-        if (loadStatus.error) {
-          throw new Error(`Audio loading error: ${loadStatus.error}`);
+        if (!loadStatus.isLoaded) {
+          throw new Error(`Audio loading failed`);
         }
         
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -309,15 +802,13 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
       // Set up playback status listener
       sound.setOnPlaybackStatusUpdate((status) => {
         if (!status.isLoaded) {
-          if (status.error) {
-            console.error('Audio playback error:', status.error);
-            Alert.alert('Playback Error', 'Unable to play this audio file');
-            setIsPlaying(false);
-            setCurrentMediaId(null);
-            setIsAudioLoading(false);
-            setAudioPosition(0);
-            setAudioDuration(0);
-          }
+          console.error('Audio playback error: Audio not loaded');
+          Alert.alert('Playback Error', 'Unable to play this audio file');
+          setIsPlaying(false);
+          setCurrentMediaId(null);
+          setIsAudioLoading(false);
+          setAudioPosition(0);
+          setAudioDuration(0);
         } else {
           // Update position and duration
           if (status.positionMillis !== undefined) {
@@ -393,6 +884,16 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     setVideoStatus({});
     setIsVideoLoading(false);
   };
+  
+  const openLesson = (lesson: Lesson) => {
+    setCurrentLesson(lesson);
+    setIsLessonModalVisible(true);
+  };
+  
+  const closeLessonModal = () => {
+    setIsLessonModalVisible(false);
+    setCurrentLesson(null);
+  };
 
   // Handle video status updates
   const handleVideoStatusUpdate = (status: any) => {
@@ -437,7 +938,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
   // Set up progress tracking interval when audio is playing
   useEffect(() => {
-    let progressInterval: NodeJS.Timeout;
+    let progressInterval: ReturnType<typeof setInterval>;
     
     if (currentSound && isPlaying) {
       progressInterval = setInterval(async () => {
@@ -468,6 +969,9 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     if (selectedCategory === 'video') {
       return mediaItems.filter(item => item.type === 'video');
     }
+    if (selectedCategory === 'learn') {
+      return []; // Learn section uses lesson data, not media items
+    }
     return mediaItems.filter(item => item.type === 'audio' && (item as AudioItem).category === selectedCategory);
   };
 
@@ -485,11 +989,23 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           subtitle: 'Background sounds for focus and relaxation',
           tags: ['FOCUS', 'CONCENTRATION', 'AMBIENT']
         };
+      case 'meditation':
+        return {
+          title: 'Meditation Music',
+          subtitle: 'Guided meditation and calming music for mindfulness',
+          tags: ['MEDITATION', 'MINDFULNESS', 'INNER PEACE']
+        };
       case 'video':
         return {
           title: 'Guided Meditation',
           subtitle: 'Video-guided breathing and mindfulness exercises',
           tags: ['BREATHING', 'MEDITATION', 'MINDFULNESS']
+        };
+      case 'learn':
+        return {
+          title: 'Mindfulness Learning',
+          subtitle: 'Interactive lessons on meditation and mindfulness for healthcare professionals',
+          tags: ['EDUCATION', 'HEALTHCARE', 'PROFESSIONAL DEVELOPMENT']
         };
     }
   };
@@ -503,9 +1019,14 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <Text style={styles.headerWelcome}>SHANTHI</Text>
-          <TouchableOpacity style={styles.signOutButton} onPress={handleLogout}>
+          <TouchableOpacity 
+            style={styles.signOutButton} 
+            onPress={handleLogout}
+          >
             <Ionicons name="log-out-outline" size={16} color={theme.colors.text} />
-            <Text style={styles.signOutButtonText}>Sign Out</Text>
+            <Text style={styles.signOutButtonText}>
+              Sign Out
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -514,21 +1035,21 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         {/* Welcome Banner */}
         <View style={styles.welcomeBanner}>
           <View style={styles.welcomeContent}>
-            <Text style={styles.welcomeTitle}>Welcome back</Text>
-            <Text style={styles.welcomeSubtitle}>Find your moment of peace</Text>
+            <Text style={styles.welcomeTitle}>Welcome</Text>
+            <Text style={styles.welcomeSubtitle}>Time updates every time you open the app</Text>
             <View style={styles.statsContainer}>
               <View style={styles.statItem}>
-                <Text style={styles.statNumber}>7</Text>
+                <Text style={styles.statNumber}>{usageStats.totalDays}</Text>
                 <Text style={styles.statLabel}>days</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
-                <Text style={styles.statNumber}>12</Text>
+                <Text style={styles.statNumber}>{usageStats.totalSessions}</Text>
                 <Text style={styles.statLabel}>sessions</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
-                <Text style={styles.statNumber}>45m</Text>
+                <Text style={styles.statNumber}>{usageStats.totalMinutes}m</Text>
                 <Text style={styles.statLabel}>total</Text>
               </View>
             </View>
@@ -538,93 +1059,40 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Category Selector */}
-        <View style={styles.categorySelector}>
-          <TouchableOpacity
-            style={[styles.categoryButton, selectedCategory === 'nature' && styles.categoryButtonActive]}
-            onPress={() => setSelectedCategory('nature')}
-          >
-            <View style={styles.categoryButtonContent}>
-              <Ionicons 
-                name="leaf" 
-                size={18} 
-                color={selectedCategory === 'nature' ? theme.colors.textOnPrimary : theme.colors.text} 
-              />
-              <Text style={[styles.categoryButtonText, selectedCategory === 'nature' && styles.categoryButtonTextActive]}>
-                Nature
-              </Text>
-            </View>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={[styles.categoryButton, selectedCategory === 'ambient' && styles.categoryButtonActive]}
-            onPress={() => setSelectedCategory('ambient')}
-          >
-            <View style={styles.categoryButtonContent}>
-              <MaterialIcons 
-                name="graphic-eq" 
-                size={18} 
-                color={selectedCategory === 'ambient' ? theme.colors.textOnPrimary : theme.colors.text} 
-              />
-              <Text style={[styles.categoryButtonText, selectedCategory === 'ambient' && styles.categoryButtonTextActive]}>
-                Ambient
-              </Text>
-            </View>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={[styles.categoryButton, selectedCategory === 'video' && styles.categoryButtonActive]}
-            onPress={() => setSelectedCategory('video')}
-          >
-            <View style={styles.categoryButtonContent}>
-              <Ionicons 
-                name="videocam" 
-                size={18} 
-                color={selectedCategory === 'video' ? theme.colors.textOnPrimary : theme.colors.text} 
-              />
-              <Text style={[styles.categoryButtonText, selectedCategory === 'video' && styles.categoryButtonTextActive]}>
-                Videos
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        {/* Featured Content for Videos */}
-        {selectedCategory === 'video' && (
-          <View style={styles.featuredSection}>
-            <Text style={styles.featuredTitle}>Featured Meditation</Text>
-            <View style={styles.featuredCard}>
-              <View style={styles.featuredCardContent}>
-                <View style={styles.featuredVideoThumbnail}>
-                  <View style={styles.featuredVideoIcon}>
-                    <MaterialIcons name="self-improvement" size={48} color={theme.colors.text} />
-                  </View>
-                  <View style={styles.playButtonLarge}>
-                    <Ionicons name="play" size={24} color={theme.colors.text} />
-                  </View>
-                </View>
-                <View style={styles.featuredInfo}>
-                  <Text style={styles.featuredVideoTitle}>Morning Mindfulness</Text>
-                  <Text style={styles.featuredVideoDescription}>
-                    Start your day with intention and calm awareness
-                  </Text>
-                  <View style={styles.featuredTags}>
-                    <View style={styles.featuredTag}>
-                      <Text style={styles.featuredTagText}>15 min</Text>
-                    </View>
-                    <View style={styles.featuredTag}>
-                      <Text style={styles.featuredTagText}>Beginner</Text>
-                    </View>
-                  </View>
-                </View>
-              </View>
-            </View>
-          </View>
-        )}
-
         {/* Media List */}
         <View style={styles.mediaContainer}>
-          {selectedCategory === 'video' ? (
+          {selectedCategory === 'learn' ? (
+            // Learn Section - Lesson Chapters
+            <View style={styles.learnContainer}>
+              {learningContent.map((chapter) => (
+                <View key={chapter.id} style={styles.chapterCard}>
+                  <Text style={styles.chapterTitle}>{chapter.title}</Text>
+                  <View style={styles.lessonsContainer}>
+                    {chapter.lessons.map((lesson) => (
+                      <TouchableOpacity 
+                        key={lesson.id} 
+                        style={styles.lessonCard}
+                        onPress={() => openLesson(lesson)}
+                        activeOpacity={0.8}
+                      >
+                        <View style={styles.lessonHeader}>
+                          <View style={styles.lessonIcon}>
+                            <Ionicons name="book" size={20} color={theme.colors.primary} />
+                          </View>
+                          <Text style={styles.lessonTitle}>{lesson.title}</Text>
+                        </View>
+                        <Text style={styles.lessonObjective}>{lesson.objective}</Text>
+                        <View style={styles.practiceInfo}>
+                          <Ionicons name="time" size={14} color={theme.colors.textSecondary} />
+                          <Text style={styles.practiceDuration}>{lesson.practice.duration}</Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              ))}
+            </View>
+          ) : selectedCategory === 'video' ? (
             // Video Grid Layout - Improved Design
             <View style={styles.videoGrid}>
               {filteredItems.map((item, index) => (
@@ -820,6 +1288,79 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.bottomSpacer} />
       </ScrollView>
 
+      {/* Bottom Navigation Bar */}
+      <View style={styles.bottomNavigation}>
+        <TouchableOpacity
+          style={[styles.navButton, selectedCategory === 'nature' && styles.navButtonActive]}
+          onPress={() => setSelectedCategory('nature')}
+        >
+          <Ionicons 
+            name="leaf" 
+            size={24} 
+            color={selectedCategory === 'nature' ? theme.colors.primary : theme.colors.text} 
+          />
+          <Text style={[styles.navButtonText, selectedCategory === 'nature' && styles.navButtonTextActive]}>
+            Nature
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.navButton, selectedCategory === 'ambient' && styles.navButtonActive]}
+          onPress={() => setSelectedCategory('ambient')}
+        >
+          <MaterialIcons 
+            name="graphic-eq" 
+            size={24} 
+            color={selectedCategory === 'ambient' ? theme.colors.primary : theme.colors.text} 
+          />
+          <Text style={[styles.navButtonText, selectedCategory === 'ambient' && styles.navButtonTextActive]}>
+            Ambient
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.navButton, selectedCategory === 'meditation' && styles.navButtonActive]}
+          onPress={() => setSelectedCategory('meditation')}
+        >
+          <Ionicons 
+            name="musical-notes" 
+            size={24} 
+            color={selectedCategory === 'meditation' ? theme.colors.primary : theme.colors.text} 
+          />
+          <Text style={[styles.navButtonText, selectedCategory === 'meditation' && styles.navButtonTextActive]}>
+            Meditation
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.navButton, selectedCategory === 'video' && styles.navButtonActive]}
+          onPress={() => setSelectedCategory('video')}
+        >
+          <Ionicons 
+            name="videocam" 
+            size={24} 
+            color={selectedCategory === 'video' ? theme.colors.primary : theme.colors.text} 
+          />
+          <Text style={[styles.navButtonText, selectedCategory === 'video' && styles.navButtonTextActive]}>
+            Videos
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.navButton, selectedCategory === 'learn' && styles.navButtonActive]}
+          onPress={() => setSelectedCategory('learn')}
+        >
+          <Ionicons 
+            name="school" 
+            size={24} 
+            color={selectedCategory === 'learn' ? theme.colors.primary : theme.colors.text} 
+          />
+          <Text style={[styles.navButtonText, selectedCategory === 'learn' && styles.navButtonTextActive]}>
+            Learn
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Video Player Modal */}
       <Modal
         visible={isVideoModalVisible}
@@ -894,6 +1435,62 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </View>
       </Modal>
+
+      {/* Lesson Detail Modal */}
+      <Modal
+        visible={isLessonModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={closeLessonModal}
+      >
+        <View style={styles.lessonModalContainer}>
+          <View style={styles.lessonModalHeader}>
+            <TouchableOpacity style={styles.lessonCloseButton} onPress={closeLessonModal}>
+              <Ionicons name="close" size={24} color={theme.colors.text} />
+            </TouchableOpacity>
+            <Text style={styles.lessonModalTitle}>
+              {currentLesson?.title}
+            </Text>
+          </View>
+          
+          <ScrollView style={styles.lessonModalContent} showsVerticalScrollIndicator={false}>
+            {currentLesson && (
+              <>
+                <View style={styles.lessonDetailCard}>
+                  <Text style={styles.lessonObjectiveTitle}>Objective</Text>
+                  <Text style={styles.lessonObjectiveText}>{currentLesson.objective}</Text>
+                </View>
+
+                <View style={styles.lessonDetailCard}>
+                  <Text style={styles.keyPointsTitle}>Key Points</Text>
+                  {currentLesson.keyPoints.map((point, index) => (
+                    <View key={index} style={styles.keyPointItem}>
+                      <View style={styles.bulletPoint} />
+                      <Text style={styles.keyPointText}>{point}</Text>
+                    </View>
+                  ))}
+                </View>
+
+                <View style={styles.lessonDetailCard}>
+                  <Text style={styles.practiceTitle}>Practice Exercise</Text>
+                  <View style={styles.practiceHeader}>
+                    <Ionicons name="time" size={16} color={theme.colors.primary} />
+                    <Text style={styles.practiceTime}>{currentLesson.practice.duration}</Text>
+                  </View>
+                  <Text style={styles.practiceInstructions}>{currentLesson.practice.instructions}</Text>
+                </View>
+
+                <View style={styles.lessonActions}>
+                  <TouchableOpacity style={styles.completeButton} onPress={closeLessonModal}>
+                    <Ionicons name="checkmark-circle" size={20} color={theme.colors.textOnPrimary} />
+                    <Text style={styles.completeButtonText}>Mark as Complete</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </ScrollView>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -921,7 +1518,7 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.fontFamily.bold,
   },
   signOutButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: theme.colors.surface,
     paddingVertical: theme.spacing.sm,
     paddingHorizontal: theme.spacing.md,
     borderRadius: theme.radii.lg,
@@ -998,41 +1595,34 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  categorySelector: {
+  
+  // Bottom Navigation
+  bottomNavigation: {
     flexDirection: 'row',
+    backgroundColor: theme.colors.background,
+    paddingTop: 12,
+    paddingBottom: 20,
     paddingHorizontal: theme.spacing.lg,
-    marginBottom: theme.spacing.lg,
-    gap: theme.spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
-  categoryButton: {
+  navButton: {
     flex: 1,
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.md,
-    borderRadius: theme.radii.xl,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderWidth: 2,
-    borderColor: 'transparent',
     alignItems: 'center',
-    ...theme.shadows.sm,
+    paddingVertical: 8,
   },
-  categoryButtonActive: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primaryDark,
-    ...theme.shadows.md,
+  navButtonActive: {
+    // No additional styling for active state - just color changes
   },
-  categoryButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.xs,
-  },
-  categoryButtonText: {
-    fontSize: 14,
+  navButtonText: {
+    fontSize: 10,
     color: theme.colors.text,
-    fontWeight: '600',
+    marginTop: 4,
     fontFamily: theme.typography.fontFamily.medium,
   },
-  categoryButtonTextActive: {
-    color: theme.colors.textOnPrimary,
+  navButtonTextActive: {
+    color: theme.colors.primary,
+    fontWeight: '600',
   },
   
   // Featured Section
@@ -1094,13 +1684,13 @@ const styles = StyleSheet.create({
   featuredVideoTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: theme.colors.text,
+    color: theme.colors.textOnSecondary,
     marginBottom: theme.spacing.xs,
     fontFamily: theme.typography.fontFamily.bold,
   },
   featuredVideoDescription: {
     fontSize: 14,
-    color: theme.colors.textSecondary,
+    color: theme.colors.textOnSecondary,
     lineHeight: 20,
     marginBottom: theme.spacing.md,
     fontFamily: theme.typography.fontFamily.regular,
@@ -1189,7 +1779,7 @@ const styles = StyleSheet.create({
   },
   videoDurationText: {
     fontSize: 10,
-    color: '#ffffff',
+    color: theme.colors.text,
     fontWeight: '600',
     fontFamily: theme.typography.fontFamily.bold,
   },
@@ -1233,14 +1823,14 @@ const styles = StyleSheet.create({
   videoCardTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: theme.colors.text,
+    color: theme.colors.textOnSecondary,
     marginBottom: theme.spacing.xs,
     fontFamily: theme.typography.fontFamily.bold,
     lineHeight: 18,
   },
   videoCardDescription: {
     fontSize: 12,
-    color: theme.colors.textSecondary,
+    color: theme.colors.textOnSecondary,
     fontFamily: theme.typography.fontFamily.regular,
     lineHeight: 16,
   },
@@ -1250,13 +1840,13 @@ const styles = StyleSheet.create({
     gap: theme.spacing.md,
   },
   audioItem: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: theme.colors.surface,
     borderRadius: theme.radii.lg,
     overflow: 'hidden',
     ...theme.shadows.md,
   },
   audioItemActive: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: theme.colors.surface,
     borderWidth: 2,
     borderColor: theme.colors.primary,
     ...theme.shadows.lg,
@@ -1270,7 +1860,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: theme.colors.background,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: theme.spacing.md,
@@ -1297,7 +1887,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.primary,
   },
   audioInfo: {
     flex: 1,
@@ -1306,13 +1896,13 @@ const styles = StyleSheet.create({
   audioTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: theme.colors.text,
+    color: theme.colors.textOnSecondary,
     marginBottom: 4,
     fontFamily: theme.typography.fontFamily.medium,
   },
   audioDescription: {
     fontSize: 14,
-    color: theme.colors.textSecondary,
+    color: theme.colors.textOnSecondary,
     marginBottom: theme.spacing.xs,
     fontFamily: theme.typography.fontFamily.regular,
   },
@@ -1336,7 +1926,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: theme.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     ...theme.shadows.sm,
@@ -1377,7 +1967,7 @@ const styles = StyleSheet.create({
   },
   audioProgressTime: {
     fontSize: 12,
-    color: theme.colors.textSecondary,
+    color: theme.colors.textOnSecondary,
     minWidth: 60,
     fontFamily: theme.typography.fontFamily.regular,
   },
@@ -1405,7 +1995,7 @@ const styles = StyleSheet.create({
   },
   audioLoadingText: {
     fontSize: 14,
-    color: theme.colors.textSecondary,
+    color: theme.colors.textOnSecondary,
     fontStyle: 'italic',
     textAlign: 'center',
     fontFamily: theme.typography.fontFamily.regular,
@@ -1532,7 +2122,7 @@ const styles = StyleSheet.create({
   videoInfoContainer: {
     paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.lg,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
   },
@@ -1575,5 +2165,201 @@ const styles = StyleSheet.create({
   audioPlayButtonDisabled: {
     opacity: 0.5,
     backgroundColor: theme.colors.border,
+  },
+  
+  // Learn Section Styles
+  learnContainer: {
+    gap: theme.spacing.xl,
+  },
+  chapterCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radii.lg,
+    padding: theme.spacing.lg,
+    ...theme.shadows.md,
+  },
+  chapterTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: theme.colors.textOnSecondary,
+    marginBottom: theme.spacing.lg,
+    fontFamily: theme.typography.fontFamily.bold,
+  },
+  lessonsContainer: {
+    gap: theme.spacing.md,
+  },
+  lessonCard: {
+    backgroundColor: theme.colors.background,
+    borderRadius: theme.radii.md,
+    padding: theme.spacing.md,
+    borderLeftWidth: 4,
+    borderLeftColor: theme.colors.primary,
+  },
+  lessonHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.spacing.sm,
+  },
+  lessonIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: theme.colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: theme.spacing.sm,
+  },
+  lessonTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.colors.text,
+    flex: 1,
+    fontFamily: theme.typography.fontFamily.medium,
+  },
+  lessonObjective: {
+    fontSize: 14,
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.sm,
+    lineHeight: 20,
+    fontFamily: theme.typography.fontFamily.regular,
+  },
+  practiceInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+  },
+  practiceDuration: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    fontWeight: '500',
+    fontFamily: theme.typography.fontFamily.medium,
+  },
+  
+  // Lesson Modal Styles
+  lessonModalContainer: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  lessonModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.lg,
+    paddingBottom: theme.spacing.lg,
+    backgroundColor: theme.colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+  },
+  lessonCloseButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: theme.colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: theme.spacing.md,
+  },
+  lessonModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: theme.colors.textOnSecondary,
+    flex: 1,
+    fontFamily: theme.typography.fontFamily.bold,
+  },
+  lessonModalContent: {
+    flex: 1,
+    paddingHorizontal: theme.spacing.lg,
+    paddingTop: theme.spacing.lg,
+  },
+  lessonDetailCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radii.lg,
+    padding: theme.spacing.lg,
+    marginBottom: theme.spacing.lg,
+    ...theme.shadows.sm,
+  },
+  lessonObjectiveTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: theme.colors.textOnSecondary,
+    marginBottom: theme.spacing.sm,
+    fontFamily: theme.typography.fontFamily.bold,
+  },
+  lessonObjectiveText: {
+    fontSize: 14,
+    color: theme.colors.textOnSecondary,
+    lineHeight: 20,
+    fontFamily: theme.typography.fontFamily.regular,
+  },
+  keyPointsTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: theme.colors.textOnSecondary,
+    marginBottom: theme.spacing.md,
+    fontFamily: theme.typography.fontFamily.bold,
+  },
+  keyPointItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: theme.spacing.sm,
+  },
+  bulletPoint: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: theme.colors.primary,
+    marginTop: 8,
+    marginRight: theme.spacing.sm,
+  },
+  keyPointText: {
+    flex: 1,
+    fontSize: 14,
+    color: theme.colors.textOnSecondary,
+    lineHeight: 20,
+    fontFamily: theme.typography.fontFamily.regular,
+  },
+  practiceTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: theme.colors.textOnSecondary,
+    marginBottom: theme.spacing.sm,
+    fontFamily: theme.typography.fontFamily.bold,
+  },
+  practiceHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.spacing.sm,
+    gap: theme.spacing.xs,
+  },
+  practiceTime: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.colors.textOnSecondary,
+    fontFamily: theme.typography.fontFamily.medium,
+  },
+  practiceInstructions: {
+    fontSize: 14,
+    color: theme.colors.textOnSecondary,
+    lineHeight: 20,
+    fontFamily: theme.typography.fontFamily.regular,
+  },
+  lessonActions: {
+    paddingVertical: theme.spacing.xl,
+    alignItems: 'center',
+  },
+  completeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.primary,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.xl,
+    borderRadius: theme.radii.lg,
+    gap: theme.spacing.sm,
+    ...theme.shadows.md,
+  },
+  completeButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.colors.textOnPrimary,
+    fontFamily: theme.typography.fontFamily.medium,
   },
 });

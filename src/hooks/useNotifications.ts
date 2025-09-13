@@ -1,87 +1,37 @@
 import { useEffect } from 'react';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
-import { useParticipant } from '../contexts/ParticipantContext';
+import { setupAllNotifications } from '../utils/notifications';
+
+const CALMING_MESSAGES = [
+  'Feeling stressed? Listen to some calming sounds',
+  'Take a break and enjoy some peaceful nature sounds',
+  'Your mind deserves rest. Try our soothing audio collection',
+  'Overwhelmed? Let calming sounds restore your peace',
+  'Time for tranquility. Explore our relaxing soundscapes',
+  'Stress relief is just a tap away. Listen to calming sounds',
+  'Give yourself the gift of calm with our peaceful audio',
+  'Feeling tense? Unwind with some gentle, soothing sounds',
+  'Your well-being matters. Take a moment for calming sounds',
+  'Need a mental reset? Our relaxing sounds are here to help',
+];
 
 export const useNotifications = () => {
-  const { studyGroup } = useParticipant();
-
   useEffect(() => {
-    const setupNotifications = async () => {
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
+    // Set up the single daily calming reminder
+    setupAllNotifications();
+  }, []);
 
-      if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-
-      if (finalStatus !== 'granted') {
-        return;
-      }
-
-      if (Platform.OS === 'android') {
-        await Notifications.setNotificationChannelAsync('default', {
-          name: 'default',
-          importance: Notifications.AndroidImportance.HIGH,
-        });
-      }
-
-      // Schedule daily check-in reminder
-      const dailyId = await Notifications.scheduleNotificationAsync({
-        content: {
-          title: 'How are you today?',
-          body: 'Take a moment to check in with yourself.',
-          data: { type: 'daily-checkin' },
-        },
-        trigger: null, // Will be managed by the app logic
-      });
-
-      // Only for intervention group
-      if (studyGroup === 'intervention') {
-        const motivationalId = await Notifications.scheduleNotificationAsync({
-          content: {
-            title: 'Daily Inspiration',
-            body: 'Remember: Your compassion makes a difference every day.',
-            data: { type: 'motivation' },
-          },
-          trigger: null, // Will be managed by the app logic
-        });
-
-        return () => {
-          Notifications.cancelScheduledNotificationAsync(motivationalId);
-          Notifications.cancelScheduledNotificationAsync(dailyId);
-        };
-      }
-
-      return () => {
-        Notifications.cancelScheduledNotificationAsync(dailyId);
-      };
-    };
-
-    setupNotifications();
-  }, [studyGroup]);
-
-  const scheduleNextNotification = async (type: string) => {
-    const content = {
-      title: '',
-      body: '',
-      data: { type },
-    };
-
-    switch (type) {
-      case 'daily-checkin':
-        content.title = 'Daily Check-in';
-        content.body = 'How are you feeling today?';
-        break;
-      case 'motivation':
-        content.title = 'Daily Inspiration';
-        content.body = 'Your dedication makes a difference.';
-        break;
-    }
-
+  const scheduleNextNotification = async () => {
+    // Get a random calming message
+    const randomMessage = CALMING_MESSAGES[Math.floor(Math.random() * CALMING_MESSAGES.length)];
+    
     await Notifications.scheduleNotificationAsync({
-      content,
+      content: {
+        title: 'Take a Moment',
+        body: randomMessage,
+        data: { type: 'calming-reminder' },
+      },
       trigger: null, // Immediate notification
     });
   };

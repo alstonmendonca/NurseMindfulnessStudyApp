@@ -11,42 +11,26 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export type NotificationType = 
-  | 'daily-checkin'
-  | 'mood-check'
-  | 'meditation'
-  | 'breathing'
-  | 'motivation';
+export type NotificationType = 'calming-reminder';
 
 const NOTIFICATION_CONTENT = {
-  'daily-checkin': {
-    title: 'How are you today?',
-    body: 'Take a moment to check in with yourself.',
-  },
-  'mood-check': {
-    title: 'Mood Check',
-    body: "Let's check how you're feeling.",
-  },
-  'meditation': {
-    title: 'Meditation Time',
-    body: 'Take a moment to meditate and find your center.',
-  },
-  'breathing': {
-    title: 'Breathing Exercise',
-    body: 'Time for a quick breathing exercise.',
-  },
-  'motivation': {
-    title: 'Daily Inspiration',
-    body: 'Remember your strength and resilience.',
+  'calming-reminder': {
+    title: 'Take a Moment',
+    body: 'Feeling stressed? Listen to some calming sounds',
   },
 };
 
-const MOTIVATIONAL_QUOTES = [
-  'Your compassion makes a difference every day.',
-  'Take care of yourself as well as you take care of others.',
-  'You have the strength to handle today.',
-  'Small steps lead to big changes.',
-  'Your well-being matters.',
+const CALMING_MESSAGES = [
+  'Feeling stressed? Listen to some calming sounds',
+  'Take a break and enjoy some peaceful nature sounds',
+  'Your mind deserves rest. Try our soothing audio collection',
+  'Overwhelmed? Let calming sounds restore your peace',
+  'Time for tranquility. Explore our relaxing soundscapes',
+  'Stress relief is just a tap away. Listen to calming sounds',
+  'Give yourself the gift of calm with our peaceful audio',
+  'Feeling tense? Unwind with some gentle, soothing sounds',
+  'Your well-being matters. Take a moment for calming sounds',
+  'Need a mental reset? Our relaxing sounds are here to help',
 ];
 
 export async function scheduleLocalNotification(
@@ -58,8 +42,8 @@ export async function scheduleLocalNotification(
 ) {
   const content = NOTIFICATION_CONTENT[type];
   
-  if (type === 'motivation') {
-    content.body = MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)];
+  if (type === 'calming-reminder') {
+    content.body = CALMING_MESSAGES[Math.floor(Math.random() * CALMING_MESSAGES.length)];
   }
 
   const notificationContent = {
@@ -85,16 +69,6 @@ export async function scheduleLocalNotification(
     content: notificationContent,
     trigger,
   });
-
-  await Notifications.scheduleNotificationAsync({
-    content: {
-      title: content.title,
-      body: content.body,
-      sound: true,
-      priority: Notifications.AndroidNotificationPriority.HIGH,
-    },
-    trigger,
-  });
 }
 
 export async function cancelAllNotifications() {
@@ -117,43 +91,20 @@ export async function requestNotificationPermissions() {
   return permissionStatus.status === 'granted';
 }
 
-// Schedule a daily check-in notification
-export async function scheduleDailyCheckIn(hour: number, minute: number) {
+// Schedule a daily calming reminder at 12 PM
+export async function scheduleDailyCalmingReminder() {
   const date = new Date();
-  date.setHours(hour, minute, 0, 0);
+  date.setHours(12, 0, 0, 0); // Set to 12:00 PM
   
-  // If the time has passed for today, schedule for tomorrow
+  // If 12 PM has passed for today, schedule for tomorrow
   if (date < new Date()) {
     date.setDate(date.getDate() + 1);
   }
 
-  await scheduleLocalNotification('daily-checkin', { 
+  await scheduleLocalNotification('calming-reminder', { 
     date,
     repeatInterval: 24 * 60 * 60 // 24 hours in seconds
   });
-}
-
-// Schedule random motivational quotes throughout the day
-export async function scheduleMotivationalQuotes(frequency: number) {
-  const now = new Date();
-  const hours = Array.from({ length: frequency }, (_, i) => 
-    Math.floor(9 + (i * (12 / frequency)))  // Spread between 9 AM and 9 PM
-  );
-
-  for (const hour of hours) {
-    const date = new Date();
-    date.setHours(hour, Math.floor(Math.random() * 60), 0, 0);
-    
-    // If the time has passed for today, schedule for tomorrow
-    if (date < now) {
-      date.setDate(date.getDate() + 1);
-    }
-
-    await scheduleLocalNotification('motivation', { 
-      date,
-      repeatInterval: 24 * 60 * 60 // 24 hours in seconds
-    });
-  }
 }
 
 // Schedule a one-time notification

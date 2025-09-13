@@ -85,21 +85,21 @@ export default function App() {
 // Separate navigator component to use hooks after providers are mounted
 function AppNavigator() {
   const { participantNumber } = useAuth();
-  const [isWiFiConnected, setIsWiFiConnected] = useState<boolean>(false);
-  const [isCheckingWiFi, setIsCheckingWiFi] = useState<boolean>(true);
+  const [isInternetConnected, setIsInternetConnected] = useState<boolean>(false);
+  const [isCheckingConnection, setIsCheckingConnection] = useState<boolean>(true);
 
   useEffect(() => {
     // Initialize network monitoring
     const initializeNetwork = async () => {
       try {
         await networkManager.initialize();
-        const isConnected = networkManager.isWiFiConnected();
-        setIsWiFiConnected(isConnected);
-        setIsCheckingWiFi(false);
+        const isConnected = networkManager.hasInternetConnection();
+        setIsInternetConnected(isConnected);
+        setIsCheckingConnection(false);
 
         // Listen for network changes
         const handleNetworkChange = (state: any) => {
-          setIsWiFiConnected(networkManager.isWiFiConnected());
+          setIsInternetConnected(networkManager.hasInternetConnection());
         };
 
         networkManager.addConnectivityListener(handleNetworkChange);
@@ -109,15 +109,15 @@ function AppNavigator() {
         };
       } catch (error) {
         console.error('Error initializing network monitoring:', error);
-        setIsCheckingWiFi(false);
+        setIsCheckingConnection(false);
       }
     };
 
     initializeNetwork();
   }, []);
 
-  // Show loading while checking WiFi status
-  if (isCheckingWiFi) {
+  // Show loading while checking internet connection status
+  if (isCheckingConnection) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
         <ActivityIndicator size="large" color={theme.colors.text} />
@@ -128,13 +128,13 @@ function AppNavigator() {
     );
   }
 
-  // Show WiFi required screen if not connected to WiFi
-  if (!isWiFiConnected) {
+  // Show internet required screen if not connected to internet
+  if (!isInternetConnected) {
     return <WiFiRequiredScreen />;
   }
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator id={undefined} screenOptions={{ headerShown: false }}>
       {!participantNumber ? (
         <Stack.Screen name="Login" component={require('./src/screens/LoginScreen').LoginScreen} />
       ) : (

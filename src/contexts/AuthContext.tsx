@@ -11,6 +11,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isInitializing: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -28,28 +29,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [participantNumber, setParticipantNumber] = useState<number | null>(null);
   const [demographicSurveyCompleted, setDemographicSurveyCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   // Restore auth state on mount
   useEffect(() => {
     (async () => {
-      const storedAuth = await getStoredAuth();
-      if (storedAuth) {
-        setParticipantNumber(storedAuth.participantNumber);
-        
-        // Re-check survey status from database
-        const { data: surveyData, error: surveyError } = await supabase
-          .from('demographic_surveys')
-          .select('id')
-          .eq('participant_id', storedAuth.participantNumber)
-          .single();
-        
-        const hasDemographicSurveyCompleted = !surveyError && !!surveyData;
-        setDemographicSurveyCompleted(hasDemographicSurveyCompleted);
-        
-        // Start usage tracking if user is authenticated and has completed survey
-        if (storedAuth.participantNumber && hasDemographicSurveyCompleted) {
-          await appUsageTracker.initializeTracking(storedAuth.participantNumber);
+      try {
+        const storedAuth = await getStoredAuth();
+        if (storedAuth) {
+          setParticipantNumber(storedAuth.participantNumber);
+          
+          // Check demographic survey completion status from participants table
+          const { data: participantData, error: participantError } = await supabase
+            .from('participants')
+            .select('demographic_survey_completed')
+            .eq('participant_number', storedAuth.participantNumber)
+            .single();
+          
+          const hasDemographicSurveyCompleted = !participantError && participantData?.demographic_survey_completed === true;
+          setDemographicSurveyCompleted(hasDemographicSurveyCompleted);
+          
+          // Note: App usage tracking will be started from HomeScreen after it loads
         }
+      } catch (error) {
+        console.error('Error restoring auth state:', error);
+      } finally {
+        setIsInitializing(false);
       }
     })();
   }, []);
@@ -58,16 +63,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const handleUsageTracking = async () => {
       if (participantNumber && demographicSurveyCompleted) {
-        // Start tracking when user is logged in and survey is completed
-        await appUsageTracker.initializeTracking(participantNumber);
+        // Tracking will be started from HomeScreen after it loads properly
+        // This ensures we don't start tracking during loading screens
       } else {
         // Stop tracking when user logs out or doesn't meet criteria
         await appUsageTracker.stopTracking();
       }
     };
 
-    handleUsageTracking();
-  }, [participantNumber, demographicSurveyCompleted]);
+    // Only run if we're not initializing
+    if (!isInitializing) {
+      handleUsageTracking();
+    }
+  }, [participantNumber, demographicSurveyCompleted, isInitializing]);
 
   const login = async (number: string, password: string) => {
     setIsLoading(true);
@@ -84,15 +92,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const parsedNumber = parseInt(data.participant_number);
       
-      // Check if participant_number exists in demographic_surveys table
-      const { data: surveyData, error: surveyError } = await supabase
-        .from('demographic_surveys')
-        .select('id')
-        .eq('participant_id', parsedNumber)
-        .single();
-
-      // Survey is completed if there's a record with this participant_number in demographic_surveys table
-      const hasDemographicSurveyCompleted = !surveyError && !!surveyData;
+      // Check demographic survey completion status from participants table
+      const hasDemographicSurveyCompleted = data.demographic_survey_completed === true;
       
       setParticipantNumber(parsedNumber);
       setDemographicSurveyCompleted(hasDemographicSurveyCompleted);
@@ -106,8 +107,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    // Stop usage tracking before clearing auth state
-    await appUsageTracker.stopTracking();
+    // Stop usage tracking but don't wait for session sync to complete
+    appUsageTracker.stopTrackingFast(); // Use non-blocking version
     
     setParticipantNumber(null);
     setDemographicSurveyCompleted(false);
@@ -122,13 +123,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         demographicSurveyCompleted,
         setDemographicSurveyCompleted: async (value: boolean) => {
           setDemographicSurveyCompleted(value);
-          // Note: We don't update the participants table flag anymore
-          // The survey completion is tracked by the existence of a record in demographic_surveys table
+          
+          // Update the participants table with the completion status
+          if (participantNumber) {
+            try {
+              const { error } = await supabase
+                .from('participants')
+                .update({ demographic_survey_completed: value })
+                .eq('participant_number', participantNumber);
+                
+              if (error) {
+                console.error('Error updating demographic survey completion status:', error);
+              }
+            } catch (error) {
+              console.error('Error updating demographic survey completion status:', error);
+            }
+          }
         },
         login,
         logout,
         isAuthenticated: !!participantNumber,
         isLoading,
+        isInitializing,
       }}
     >
       {children}
