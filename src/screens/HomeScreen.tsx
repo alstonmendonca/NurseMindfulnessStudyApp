@@ -732,7 +732,21 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
   const handlePlayAudio = async (item: AudioItem) => {
     try {
-      // Stop current sound if playing
+      // If same audio is playing, pause/resume it
+      if (currentMediaId === item.id && currentSound) {
+        if (isPlaying) {
+          // Pause the audio
+          await currentSound.pauseAsync();
+          setIsPlaying(false);
+        } else {
+          // Resume the audio
+          await currentSound.playAsync();
+          setIsPlaying(true);
+        }
+        return;
+      }
+
+      // Stop current sound if playing a different audio
       if (currentSound) {
         await currentSound.stopAsync();
         await currentSound.unloadAsync();
@@ -740,12 +754,6 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         setIsPlaying(false);
         setAudioPosition(0);
         setAudioDuration(0);
-      }
-
-      if (currentMediaId === item.id && isPlaying) {
-        // If same audio is playing, stop it
-        setCurrentMediaId(null);
-        return;
       }
 
       // Show loading state
@@ -799,39 +807,44 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         throw new Error('Audio failed to load within timeout period');
       }
 
-      // Set up playback status listener
-      sound.setOnPlaybackStatusUpdate((status) => {
-        if (!status.isLoaded) {
-          console.error('Audio playback error: Audio not loaded');
-          Alert.alert('Playback Error', 'Unable to play this audio file');
-          setIsPlaying(false);
-          setCurrentMediaId(null);
-          setIsAudioLoading(false);
-          setAudioPosition(0);
-          setAudioDuration(0);
-        } else {
-          // Update position and duration
-          if (status.positionMillis !== undefined) {
-            setAudioPosition(status.positionMillis);
-          }
-          if (status.durationMillis !== undefined) {
-            setAudioDuration(status.durationMillis);
-          }
-          
-          // Update playing state
-          setIsPlaying(status.isPlaying || false);
-          
-          // Handle playback completion
-          if (status.didJustFinish && !status.isLooping) {
-            setIsPlaying(false);
-            setCurrentMediaId(null);
-            setAudioPosition(0);
-          }
-        }
-      });
-      
-      // Start playback
+      // Start playback first
       await sound.playAsync();
+      
+      // Set up playback status listener after a brief delay to avoid initial loading errors
+      setTimeout(() => {
+        sound.setOnPlaybackStatusUpdate((status) => {
+          if (!status.isLoaded) {
+            // Only show error if we're not in a loading state and audio was expected to be playing
+            if (!isAudioLoading && currentSound === sound) {
+              console.error('Audio playback error: Audio not loaded during playback');
+              Alert.alert('Playback Error', 'Unable to play this audio file');
+              setIsPlaying(false);
+              setCurrentMediaId(null);
+              setIsAudioLoading(false);
+              setAudioPosition(0);
+              setAudioDuration(0);
+            }
+          } else {
+            // Update position and duration
+            if (status.positionMillis !== undefined) {
+              setAudioPosition(status.positionMillis);
+            }
+            if (status.durationMillis !== undefined) {
+              setAudioDuration(status.durationMillis);
+            }
+            
+            // Update playing state
+            setIsPlaying(status.isPlaying || false);
+            
+            // Handle playback completion
+            if (status.didJustFinish && !status.isLooping) {
+              setIsPlaying(false);
+              setCurrentMediaId(null);
+              setAudioPosition(0);
+            }
+          }
+        });
+      }, 500); // Wait 500ms before setting up the status listener
       
       setCurrentSound(sound);
       setIsPlaying(true);
@@ -921,6 +934,20 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     setCurrentMediaId(null);
     setAudioPosition(0);
     setAudioDuration(0);
+  };
+
+  const pauseCurrentMedia = async () => {
+    if (currentSound && isPlaying) {
+      await currentSound.pauseAsync();
+      setIsPlaying(false);
+    }
+  };
+
+  const resumeCurrentMedia = async () => {
+    if (currentSound && !isPlaying) {
+      await currentSound.playAsync();
+      setIsPlaying(true);
+    }
   };
 
   // Cleanup on unmount
