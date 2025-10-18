@@ -6,6 +6,7 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "channel": "development",
       "android": {
         "buildType": "apk"
       },
@@ -16,6 +17,7 @@
     },
     "preview": {
       "distribution": "internal",
+      "channel": "preview",
       "android": {
         "buildType": "apk"
       },
@@ -25,8 +27,13 @@
       }
     },
     "production": {
+      "channel": "production",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "SUPABASE_URL": "https://spytpzjvechwydrekrgj.supabase.co",
+        "SUPABASE_ANON_KEY": "sb_publishable_K0YygHw_wBjeHloHOwzr-A_HcRD733p"
       }
     }
   }

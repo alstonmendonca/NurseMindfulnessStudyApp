@@ -1,6 +1,9 @@
 import { supabase } from './supabase';
 import { AppState, AppStateStatus } from 'react-native';
 import { networkManager, ConnectivityState } from './networkManager';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const OFFLINE_QUEUE_KEY = '@app_usage_offline_queue';
 
 export interface AppUsageSession {
   id?: number;
@@ -12,6 +15,13 @@ export interface AppUsageSession {
   created_at?: string;
 }
 
+interface OfflineSessionEnd {
+  sessionId: number;
+  sessionEnd: string;
+  durationMinutes: number;
+  timestamp: number;
+}
+
 class AppUsageTracker {
   private currentSessionId: number | null = null;
   private sessionStartTime: Date | null = null;
@@ -19,38 +29,78 @@ class AppUsageTracker {
   private appStateSubscription: any = null;
   private currentAppState: AppStateStatus = 'active';
   private sessionTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private backgroundTimeoutId: ReturnType<typeof setTimeout> | null = null;
   private isOnline: boolean = false;
   private networkListener: ((state: ConnectivityState) => void) | null = null;
   private isInitialized: boolean = false;
+  private isInitializing: boolean = false;
 
   // Initialize tracking for a participant
   async initializeTracking(participantNumber: number): Promise<void> {
-    // Prevent double initialization
+    // Prevent concurrent initialization
+    if (this.isInitializing) {
+      console.log('⏳ Initialization already in progress, waiting...');
+      // Wait a bit and return
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return;
+    }
+
+    // Prevent double initialization for same participant
     if (this.isInitialized && this.participantNumber === participantNumber) {
-      console.log('App usage tracking already initialized for participant:', participantNumber);
+      console.log('✅ App usage tracking already initialized for participant:', participantNumber);
       return;
     }
 
     // If tracking is already initialized for a different participant, stop it first
     if (this.isInitialized && this.participantNumber !== participantNumber) {
+      console.log('🔄 Switching participant - stopping previous tracking');
       await this.stopTracking();
     }
 
-    this.participantNumber = participantNumber;
-    this.currentAppState = AppState.currentState;
-    this.isInitialized = true;
-    
-    // Initialize network monitoring
-    await this.initializeNetworkMonitoring();
-    
-    // Clean up any orphaned sessions on app start
-    await this.cleanupOrphanedSessions();
-    
-    this.startAppStateListener();
-    
-    // Only start session if app is currently active
-    if (this.currentAppState === 'active') {
-      await this.startSession();
+    this.isInitializing = true;
+
+    try {
+      this.participantNumber = participantNumber;
+      this.currentAppState = AppState.currentState;
+      
+      // Initialize network monitoring
+      await this.initializeNetworkMonitoring();
+      
+      // Clean up any orphaned sessions on app start
+      await this.cleanupOrphanedSessions();
+      
+      this.startAppStateListener();
+      
+      // Only start session if app is currently active
+      if (this.currentAppState === 'active') {
+        await this.startSession();
+      }
+
+      // Add app termination handler for better session cleanup
+      this.addTerminationHandler();
+
+      this.isInitialized = true;
+      console.log('✅ App usage tracking initialized for participant:', participantNumber);
+    } catch (error) {
+      console.error('❌ Error initializing app usage tracking:', error);
+      this.isInitialized = false;
+    } finally {
+      this.isInitializing = false;
+    }
+  }
+
+  // Add handler for app termination/crash scenarios
+  private addTerminationHandler(): void {
+    // Handle process termination (if available in React Native)
+    if (typeof process !== 'undefined' && process.on) {
+      const handleTermination = () => {
+        console.log('App terminating - ending session immediately');
+        this.endSessionFast();
+      };
+
+      process.on('exit', handleTermination);
+      process.on('SIGINT', handleTermination);
+      process.on('SIGTERM', handleTermination);
     }
   }
 
@@ -59,7 +109,11 @@ class AppUsageTracker {
     const wasOnline = this.isOnline;
     this.isOnline = isOnline;
 
-    // Note: No longer syncing buffered data - using direct Supabase calls only
+    // If just came back online, sync queued session ends
+    if (!wasOnline && isOnline) {
+      console.log('📶 Back online - syncing queued session ends...');
+      this.syncOfflineQueue();
+    }
   }
 
   // Initialize network monitoring
@@ -68,15 +122,87 @@ class AppUsageTracker {
     this.isOnline = networkManager.hasInternetConnection();
     
     this.networkListener = (state: ConnectivityState) => {
-      const wasOnline = this.isOnline;
-      this.isOnline = networkManager.hasInternetConnection();
-      
-      console.log('Network state changed. Online:', this.isOnline);
-      
-      // Note: No longer syncing buffered data - using direct Supabase calls only
+      this.handleOnlineStateChange(networkManager.hasInternetConnection());
     };
     
     networkManager.addConnectivityListener(this.networkListener);
+    
+    // Sync any pending offline session ends when initializing
+    if (this.isOnline) {
+      await this.syncOfflineQueue();
+    }
+  }
+
+  // Add session end to offline queue
+  private async queueOfflineSessionEnd(sessionId: number, sessionEnd: string, durationMinutes: number): Promise<void> {
+    try {
+      const queue = await this.getOfflineQueue();
+      queue.push({
+        sessionId,
+        sessionEnd,
+        durationMinutes,
+        timestamp: Date.now(),
+      });
+      await AsyncStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
+      console.log(`📝 Queued offline session end for session ${sessionId}`);
+    } catch (error) {
+      console.error('Error queuing offline session end:', error);
+    }
+  }
+
+  // Get offline queue from storage
+  private async getOfflineQueue(): Promise<OfflineSessionEnd[]> {
+    try {
+      const queueJson = await AsyncStorage.getItem(OFFLINE_QUEUE_KEY);
+      return queueJson ? JSON.parse(queueJson) : [];
+    } catch (error) {
+      console.error('Error reading offline queue:', error);
+      return [];
+    }
+  }
+
+  // Sync offline queue when back online
+  private async syncOfflineQueue(): Promise<void> {
+    try {
+      const queue = await this.getOfflineQueue();
+      if (queue.length === 0) {
+        return;
+      }
+
+      console.log(`📤 Syncing ${queue.length} queued session ends...`);
+      
+      let successCount = 0;
+      const failedItems: OfflineSessionEnd[] = [];
+
+      for (const item of queue) {
+        const { error } = await supabase
+          .from('app_usage_sessions')
+          .update({
+            session_end: item.sessionEnd,
+            duration_minutes: item.durationMinutes,
+          })
+          .eq('id', item.sessionId);
+
+        if (error) {
+          console.error(`Failed to sync session ${item.sessionId}:`, error);
+          failedItems.push(item);
+        } else {
+          successCount++;
+        }
+      }
+
+      // Update queue with only failed items
+      await AsyncStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(failedItems));
+      
+      if (successCount > 0) {
+        console.log(`✅ Successfully synced ${successCount} offline session ends`);
+      }
+      if (failedItems.length > 0) {
+        console.log(`⚠️ ${failedItems.length} session ends failed to sync and remain queued`);
+      }
+    } catch (error) {
+      console.error('Error syncing offline queue:', error);
+    }
   }
 
   // Clean up sessions that didn't end properly (app was force closed, etc.)
@@ -211,49 +337,45 @@ class AppUsageTracker {
       return;
     }
 
-    // Only end session if online and session has a real database ID
-    if (!this.isOnline) {
-      console.log('Cannot end session - offline. Session data may be lost.');
-      // Reset session data
-      this.currentSessionId = null;
-      this.sessionStartTime = null;
-      this.clearSessionTimeout();
-      return;
-    }
+    const sessionId = this.currentSessionId;
+    const startTime = this.sessionStartTime;
+    
+    // Clear session data immediately to prevent multiple end calls
+    this.currentSessionId = null;
+    this.sessionStartTime = null;
+    this.clearSessionTimeout();
+    this.clearBackgroundTimeout();
 
     try {
       const sessionEndTime = new Date();
-      const durationMinutes = Math.round(
-        (sessionEndTime.getTime() - this.sessionStartTime.getTime()) / (1000 * 60)
-      );
+      const durationMs = sessionEndTime.getTime() - startTime.getTime();
+      const durationMinutes = Math.max(1, Math.round(durationMs / (1000 * 60)));
 
-      console.log(`Ending session ${this.currentSessionId}, duration: ${durationMinutes} minutes`);
+      console.log(`Ending session ${sessionId}, duration: ${durationMinutes} minutes`);
 
-      // Update session in database
-      const { error } = await supabase
-        .from('app_usage_sessions')
-        .update({
-          session_end: sessionEndTime.toISOString(),
-          duration_minutes: Math.max(1, durationMinutes),
-        })
-        .eq('id', this.currentSessionId);
+      // Try to update database if online, otherwise queue for later
+      if (this.isOnline) {
+        const { error } = await supabase
+          .from('app_usage_sessions')
+          .update({
+            session_end: sessionEndTime.toISOString(),
+            duration_minutes: durationMinutes,
+          })
+          .eq('id', sessionId);
 
-      if (error) {
-        console.error('Error ending app usage session in Supabase:', error);
+        if (error) {
+          console.error('Error ending app usage session in Supabase:', error);
+          // Queue for retry if online but request failed
+          await this.queueOfflineSessionEnd(sessionId, sessionEndTime.toISOString(), durationMinutes);
+        } else {
+          console.log(`✅ App usage session ended successfully in Supabase. Duration: ${durationMinutes} minutes`);
+        }
       } else {
-        console.log(`✅ App usage session ended successfully in Supabase. Duration: ${durationMinutes} minutes`);
+        console.warn('⚠️ Offline - queuing session end for sync when back online');
+        await this.queueOfflineSessionEnd(sessionId, sessionEndTime.toISOString(), durationMinutes);
       }
-      
-      // Reset session data
-      this.currentSessionId = null;
-      this.sessionStartTime = null;
-      this.clearSessionTimeout();
     } catch (error) {
       console.error('Error in endSession:', error);
-      // Reset session data even on error
-      this.currentSessionId = null;
-      this.sessionStartTime = null;
-      this.clearSessionTimeout();
     }
   }
 
@@ -262,8 +384,13 @@ class AppUsageTracker {
     this.clearSessionTimeout();
     // Auto-end session after 30 minutes of inactivity
     this.sessionTimeoutId = setTimeout(async () => {
-      console.log('Session timeout - ending session due to inactivity');
-      await this.endSession();
+      console.log('⏰ Session timeout - ending session due to 30 minutes of inactivity');
+      // Check if session is still active before ending
+      if (this.currentSessionId && this.currentAppState === 'active') {
+        await this.endSession();
+      } else {
+        console.log('Session already ended or app not active - skipping timeout end');
+      }
     }, 30 * 60 * 1000); // 30 minutes
   }
 
@@ -275,6 +402,14 @@ class AppUsageTracker {
     }
   }
 
+  // Clear background timeout
+  private clearBackgroundTimeout(): void {
+    if (this.backgroundTimeoutId) {
+      clearTimeout(this.backgroundTimeoutId);
+      this.backgroundTimeoutId = null;
+    }
+  }
+
   // Fast end session for logout - fire and forget
   private endSessionFast(): void {
     if (!this.currentSessionId || !this.sessionStartTime) {
@@ -282,40 +417,47 @@ class AppUsageTracker {
       return;
     }
 
-    const sessionEndTime = new Date();
-    const durationMinutes = Math.round(
-      (sessionEndTime.getTime() - this.sessionStartTime.getTime()) / (1000 * 60)
-    );
+    const sessionId = this.currentSessionId;
+    const startTime = this.sessionStartTime;
+    
+    // Reset session data immediately to prevent race conditions
+    this.currentSessionId = null;
+    this.sessionStartTime = null;
+    this.clearSessionTimeout();
+    this.clearBackgroundTimeout();
 
-    console.log(`Fast ending session ${this.currentSessionId}, duration: ${durationMinutes} minutes (logout)`);
+    const sessionEndTime = new Date();
+    const durationMs = sessionEndTime.getTime() - startTime.getTime();
+    const durationMinutes = Math.max(1, Math.round(durationMs / (1000 * 60)));
+
+    console.log(`Fast ending session ${sessionId}, duration: ${durationMinutes} minutes (logout)`);
 
     // Fire request to Supabase without waiting (if online)
     if (this.isOnline) {
-      console.log('Firing logout session end to Supabase (no wait)...');
+      console.log('🚀 Firing logout session end to Supabase (no wait)...');
       
       supabase
         .from('app_usage_sessions')
         .update({
           session_end: sessionEndTime.toISOString(),
-          duration_minutes: Math.max(1, durationMinutes),
+          duration_minutes: durationMinutes,
         })
-        .eq('id', this.currentSessionId)
+        .eq('id', sessionId)
         .then(({ error }) => {
           if (error) {
-            console.error('Logout session end error:', error);
+            console.error('❌ Logout session end error:', error);
           } else {
-            console.log(`🚀 Logout session end fired to Supabase. Duration: ${durationMinutes} minutes`);
+            console.log(`✅ Logout session end fired to Supabase. Duration: ${durationMinutes} minutes`);
           }
         });
     } else {
-      console.log('Cannot end session during logout - offline. Session data may be lost.');
+      console.log('⚠️ Offline during logout - queuing session end');
+      // Queue offline without waiting
+      this.queueOfflineSessionEnd(sessionId, sessionEndTime.toISOString(), durationMinutes)
+        .catch(error => console.error('Error queuing offline session:', error));
     }
 
-    // Reset session data immediately
-    console.log('Resetting session data immediately (logout)');
-    this.currentSessionId = null;
-    this.sessionStartTime = null;
-    this.clearSessionTimeout();
+    console.log('✅ Session data reset immediately (logout)');
   }
 
   // Handle app state changes
@@ -332,46 +474,8 @@ class AppUsageTracker {
         previousState === 'active') {
       console.log('App going to background - ending session immediately');
       
-      // End session immediately without waiting
-      if (this.currentSessionId && this.sessionStartTime) {
-        const sessionEndTime = new Date();
-        const durationMinutes = Math.round(
-          (sessionEndTime.getTime() - this.sessionStartTime.getTime()) / (1000 * 60)
-        );
-
-        console.log(`Immediately ending session ${this.currentSessionId}, duration: ${durationMinutes} minutes, online: ${this.isOnline}`);
-
-        // Fire and forget - don't await to prevent blocking
-        if (this.isOnline) {
-          console.log('Firing session end to Supabase (no await)...');
-          
-          // Fire the request without awaiting
-          const updatePromise = supabase
-            .from('app_usage_sessions')
-            .update({
-              session_end: sessionEndTime.toISOString(),
-              duration_minutes: Math.max(1, durationMinutes),
-            })
-            .eq('id', this.currentSessionId);
-
-          // Handle the promise without blocking
-          updatePromise.then(({ error }) => {
-            if (error) {
-              console.error('Fire-and-forget session end error:', error);
-            } else {
-              console.log(`🚀 Session end fired to Supabase. Duration: ${durationMinutes} minutes`);
-            }
-          });
-        } else {
-          console.log('Cannot end session - offline. Session data may be lost.');
-        }
-
-        // Reset session data immediately
-        console.log('Resetting session data immediately');
-        this.currentSessionId = null;
-        this.sessionStartTime = null;
-        this.clearSessionTimeout();
-      }
+      // CRITICAL FIX: Use the existing endSession method instead of duplicating logic
+      await this.endSession();
     } 
     // App is becoming active from background/inactive
     else if (nextAppState === 'active' && 

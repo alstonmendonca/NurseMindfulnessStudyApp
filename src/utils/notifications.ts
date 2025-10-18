@@ -11,27 +11,13 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export type NotificationType = 'calming-reminder';
+export type NotificationType = 'daily-reminder';
 
-const NOTIFICATION_CONTENT = {
-  'calming-reminder': {
-    title: 'Take a Moment',
-    body: 'Feeling stressed? Listen to some calming sounds',
-  },
+// Single daily notification message
+const NOTIFICATION_MESSAGE = {
+  title: 'SHANTHI',
+  body: 'Time to use the SHANTHI App for relaxation',
 };
-
-const CALMING_MESSAGES = [
-  'Feeling stressed? Listen to some calming sounds',
-  'Take a break and enjoy some peaceful nature sounds',
-  'Your mind deserves rest. Try our soothing audio collection',
-  'Overwhelmed? Let calming sounds restore your peace',
-  'Time for tranquility. Explore our relaxing soundscapes',
-  'Stress relief is just a tap away. Listen to calming sounds',
-  'Give yourself the gift of calm with our peaceful audio',
-  'Feeling tense? Unwind with some gentle, soothing sounds',
-  'Your well-being matters. Take a moment for calming sounds',
-  'Need a mental reset? Our relaxing sounds are here to help',
-];
 
 export const setupNotifications = async () => {
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
@@ -58,60 +44,82 @@ export const setupNotifications = async () => {
   return true;
 };
 
-// Utility function to calculate next time from hours and minutes
-const getNextTriggerDate = (targetHour: number, targetMinute: number = 0): Date => {
-  const now = new Date();
-  const next = new Date(now);
-  next.setHours(targetHour, targetMinute, 0, 0);
-  
-  if (next <= now) {
-    next.setDate(next.getDate() + 1);
-  }
-  
-  return next;
-};
-
 export const scheduleDailyCalmingReminder = async () => {
-  const nextTime = getNextTriggerDate(12); // 12 PM
-
-  // Schedule for the next 30 days since Android doesn't support indefinite repeating
-  const notifications = Array.from({ length: 30 }, (_, i) => {
-    const date = new Date(nextTime);
-    date.setDate(date.getDate() + i);
-    const seconds = Math.floor((date.getTime() - Date.now()) / 1000);
-    
-    if (seconds > 0) {
-      // Randomize the message for each day
-      const randomMessage = CALMING_MESSAGES[Math.floor(Math.random() * CALMING_MESSAGES.length)];
-      
-      return Notifications.scheduleNotificationAsync({
-        content: {
-          ...NOTIFICATION_CONTENT['calming-reminder'],
-          body: randomMessage,
-        },
-        trigger: {
-          seconds,
-        } as Notifications.NotificationTriggerInput,
-      });
-    }
-    return Promise.resolve();
+  // Cancel any existing notifications first to ensure only one is scheduled
+  await Notifications.cancelAllScheduledNotificationsAsync();
+  
+  // Schedule a daily repeating notification at 12:00 PM (noon)
+  const notificationId = await Notifications.scheduleNotificationAsync({
+    content: {
+      title: NOTIFICATION_MESSAGE.title,
+      body: NOTIFICATION_MESSAGE.body,
+      sound: true,
+      data: { 
+        type: 'daily-reminder',
+      },
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.DAILY,
+      hour: 12,
+      minute: 0,
+    },
   });
 
-  await Promise.all(notifications.filter(Boolean));
-  return 'calming-reminder';
+  console.log(`✅ Scheduled daily notification at 12:00 PM (ID: ${notificationId})`);
+  
+  return {
+    notificationId,
+    message: 'Daily notification scheduled for 12:00 PM'
+  };
+};
+
+// Function to check if we already have a notification scheduled
+export const checkIfNotificationAlreadyScheduled = async () => {
+  const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+  console.log(`📅 Total scheduled notifications: ${scheduled.length}`);
+  return scheduled.length > 0;
 };
 
 export const setupAllNotifications = async () => {
   const hasPermission = await setupNotifications();
-  if (!hasPermission) return;
+  if (!hasPermission) {
+    console.log('❌ Notification permissions not granted');
+    return;
+  }
 
-  // Cancel any existing notifications
-  await Notifications.cancelAllScheduledNotificationsAsync();
-
-  // Schedule daily calming reminder at 12 PM
+  // Schedule the daily notification at 12:00 PM
+  // This will cancel any existing notifications and create a new one
   await scheduleDailyCalmingReminder();
+  
+  // Show current schedule for debugging
+  await getScheduledNotifications();
 };
 
 export const clearAllNotifications = async () => {
   await Notifications.cancelAllScheduledNotificationsAsync();
+};
+
+// Debug function to check currently scheduled notifications
+export const getScheduledNotifications = async () => {
+  const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+  console.log(`📅 Total scheduled notifications: ${scheduled.length}`);
+  
+  if (scheduled.length > 0) {
+    console.log('📝 Scheduled notifications:');
+    scheduled.forEach((notification, index) => {
+      const trigger = notification.trigger as any;
+      if (trigger.type === 'daily') {
+        console.log(`   ${index + 1}. Daily at ${trigger.hour}:${String(trigger.minute).padStart(2, '0')}`);
+      } else if (trigger.seconds) {
+        const triggerDate = new Date(Date.now() + trigger.seconds * 1000);
+        console.log(`   ${index + 1}. ${triggerDate.toLocaleDateString()} at ${triggerDate.toLocaleTimeString()}`);
+      } else {
+        console.log(`   ${index + 1}. Unknown trigger type`);
+      }
+    });
+  } else {
+    console.log('⚠️ No notifications currently scheduled');
+  }
+  
+  return scheduled;
 };
