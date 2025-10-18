@@ -35,11 +35,10 @@ export default function App() {
     const subscription = Notifications.addNotificationResponseReceivedListener(response => {
       const { type } = response.notification.request.content.data || {};
 
-      // Handle different notification types
-      if (type === 'daily-checkin') {
-        // Navigate to daily check-in
-      } else if (type === 'motivation') {
-        // Handle motivational notification
+      // Handle the daily reminder notification
+      if (type === 'daily-reminder') {
+        // User tapped on the notification - they'll be taken to the app
+        console.log('User opened app from daily reminder notification');
       }
     });
 

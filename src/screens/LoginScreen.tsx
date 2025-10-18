@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 16,
     fontFamily: theme.typography.fontFamily.medium,
-    color: theme.colors.text,
+    color: theme.colors.background, // Dark blue for better visibility on light surface
     marginLeft: theme.spacing.sm,
   },
   inputWrapper: {

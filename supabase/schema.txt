@@ -44,21 +44,25 @@ created_at (timestamptz)
 
 Table: participants
 
-participant_number (int4, PK)
+participant_number (int4, PK) → Primary key, unique identifier for each participant
 
-participant_password (text)
+participant_password (text) → Hashed password for participant authentication
 
-demographic_survey_completed (bool)
+demographic_survey_completed (bool) → Whether participant has completed demographic survey
 
-department (text)
+department (text) → Department or unit information (deprecated, kept for backward compatibility)
 
-study_group (text)
+study_group (text) → Research study group assignment (e.g., control vs intervention)
 
-created_at (timestamptz)
+created_at (timestamptz) → Timestamp when participant record was created
 
-last_active (timestamptz)
+last_active (timestamptz) → Last time participant was active in the app
 
-completed_onboarding (bool)
+completed_onboarding (bool) → Whether participant completed onboarding (deprecated)
+
+id_used (bool) → Flag to track if this participant ID has been used/activated
+
+Group (varchar) → Study group assignment (alternative field name)
 
 Table: app_usage_sessions
 

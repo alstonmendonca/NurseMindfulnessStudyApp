@@ -10,6 +10,7 @@ import { Audio, Video, ResizeMode } from 'expo-av';
 import { Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { supabase } from '../utils/supabase';
 import { appUsageTracker } from '../utils/appUsageTracker';
+import { setupAllNotifications, getScheduledNotifications } from '../utils/notifications';
 
 const { width, height } = Dimensions.get('window');
 
@@ -721,6 +722,23 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
     initializeUsageTracking();
   }, [participantNumber]);
+
+  // Initialize daily notifications when HomeScreen loads
+  useEffect(() => {
+    const initializeNotifications = async () => {
+      try {
+        await setupAllNotifications();
+        console.log('Daily notifications set up successfully');
+        
+        // Verify the setup (debug)
+        await getScheduledNotifications();
+      } catch (error) {
+        console.error('Error setting up notifications:', error);
+      }
+    };
+
+    initializeNotifications();
+  }, []); // Run once when component mounts
 
   // Helper function to format time in MM:SS format
   const formatTime = (milliseconds: number): string => {

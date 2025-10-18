@@ -1,43 +1,45 @@
 {
   "expo": {
-    "name": "Shanthi App",
+    "name": "SHANTHI APP",
     "slug": "shanthi",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#232323"
+    },
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.shanthi",
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#E8F4FD"
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
         "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
-      "package": "com.anonymous.shanthi"
+      "package": "com.anonymous.shanthi",
+      "label": "SHANTHI APP",
+      "versionCode": 1,
+      "runtimeVersion": "1.0.0"
     },
     "web": {
-      "favicon": "./assets/images/icon.png"
+      "favicon": "./assets/icon.png"
     },
     "plugins": [
-      [
-        "expo-splash-screen",
-        {
-          "backgroundColor": "#232323",
-          "image": "./assets/images/splash-icon.png",
-          "dark": {
-            "image": "./assets/images/splash-icon-dark.png",
-            "backgroundColor": "#000000"
-          },
-          "imageWidth": 200
-        }
-      ],
       "expo-audio",
       "expo-video"
     ],
@@ -49,6 +51,9 @@
       "eas": {
         "projectId": "a5ba71d6-69f1-4bd8-8f23-d1b22e92890a"
       }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/a5ba71d6-69f1-4bd8-8f23-d1b22e92890a"
     }
   }
 }
