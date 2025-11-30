@@ -1,41 +1,47 @@
 export const colors = {
-  // New color palette based on user requirements
-  primary: '#9c7c5d',      // Tan - for highlights and interactive elements
-  secondary: '#bbcacf',    // Light blue - for sound cards
-  tertiary: '#2b4961',     // Dark blue - for background
+  // New color palette
+  primary: '#3A2477',      // Mindfulness purple - for highlights
+  secondary: '#101340',    // Secondary background
+  tertiary: '#050726',     // Main background
   
   // Background and surface colors
-  background: '#2b4961',   // Dark blue background
-  surface: '#bbcacf',      // Light blue for cards
-  surfaceVariant: '#bbcacf', // Light blue
+  background: '#050726',   // Main background
+  surface: '#101340',      // Secondary background for cards
+  surfaceVariant: '#101340', // Secondary background variant
   
   // Text colors
-  text: '#f9f9f9',         // Off-white primary text
-  textSecondary: '#f9f9f9', // Off-white secondary text
-  textLight: '#f9f9f9',    // Off-white light text
-  textOnPrimary: '#2b4961', // Dark blue on tan buttons
-  textOnSecondary: '#2b4961', // Dark blue on light blue
-  mutedText: '#bbcacf',    // Light blue for muted text
+  text: '#E5E7EC',         // Primary text and icons
+  textSecondary: '#E5E7EC', // Secondary text
+  textLight: '#E5E7EC',    // Light text
+  textOnPrimary: '#E5E7EC', // Text on colored buttons
+  textOnSecondary: '#E5E7EC', // Text on secondary backgrounds
+  mutedText: '#9ca3af',    // Muted text
   
   // UI colors
-  border: '#bbcacf',       // Light blue borders
-  borderLight: '#bbcacf',  // Light blue light borders
-  overlay: '#2b4961',      // Dark blue overlay
+  border: '#101340',       // Borders
+  borderLight: '#101340',  // Light borders
+  overlay: '#050726',      // Overlay
   
   // Additional properties for backward compatibility
-  primaryDark: '#9c7c5d', // Tan
+  primaryDark: '#3A2477', // Mindfulness purple
   
   // Button colors
-  button: '#9c7c5d',       // Tan buttons
-  buttonText: '#f9f9f9',   // Off-white text on buttons
-  buttonSecondary: '#bbcacf', // Light blue secondary buttons
-  buttonSecondaryText: '#2b4961', // Dark blue text on secondary buttons
+  button: '#3A2477',       // Primary buttons
+  buttonText: '#E5E7EC',   // Text on buttons
+  buttonSecondary: '#101340', // Secondary buttons
+  buttonSecondaryText: '#E5E7EC', // Text on secondary buttons
+  
+  // Homepage card colors
+  meditate: '#C36B32',     // Meditate button
+  mindfulness: '#3A2477',  // Mindfulness button
+  move: '#C25A99',         // Move button
+  breathing: '#1960CC',    // Breathing button
   
   // Status colors
-  success: '#9c7c5d',      // Tan
-  warning: '#bbcacf',      // Light blue
-  error: '#9c7c5d',        // Tan
-  info: '#bbcacf',         // Light blue
+  success: '#10b981',      // Green
+  warning: '#f59e0b',      // Orange
+  error: '#ef4444',        // Red
+  info: '#3b82f6',         // Blue
 };
 
 export const spacing = {

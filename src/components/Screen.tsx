@@ -1,5 +1,6 @@
 import React from 'react';
-import { SafeAreaView, View, StyleSheet, Text, ViewStyle } from 'react-native';
+import { View, StyleSheet, Text, ViewStyle } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../constants/theme';
 
 interface ScreenProps {

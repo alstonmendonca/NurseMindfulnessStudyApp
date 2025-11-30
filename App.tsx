@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAuth } from './src/contexts/AuthContext';
 import * as Notifications from 'expo-notifications';
 import { RootStackParamList } from './src/navigation/types';
@@ -60,24 +61,26 @@ export default function App() {
   }
 
   return (
-    <AuthProvider>
-      <ParticipantProvider>
-        <NavigationContainer theme={{
-          ...DefaultTheme,
-          colors: {
-            ...DefaultTheme.colors,
-            background: theme.colors.background,
-            text: theme.colors.text,
-            border: theme.colors.border,
-            primary: theme.colors.text,
-            card: theme.colors.background,
-          },
-        }}>
-          <AppNavigator />
-          <StatusBar style="dark" />
-        </NavigationContainer>
-      </ParticipantProvider>
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <ParticipantProvider>
+          <NavigationContainer theme={{
+            ...DefaultTheme,
+            colors: {
+              ...DefaultTheme.colors,
+              background: theme.colors.background,
+              text: theme.colors.text,
+              border: theme.colors.border,
+              primary: theme.colors.text,
+              card: theme.colors.background,
+            },
+          }}>
+            <AppNavigator />
+            <StatusBar style="light" />
+          </NavigationContainer>
+        </ParticipantProvider>
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
 
