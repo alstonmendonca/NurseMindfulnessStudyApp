@@ -10,6 +10,7 @@ import { theme } from '../constants/theme';
 import { DEMOGRAPHIC_QUESTIONS, DemographicSurveyData } from '../constants/demographicSurvey';
 import { supabase } from '../utils/supabase';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { BackgroundDoodles } from '../components/BackgroundDoodles';
 
 type Props = NativeStackScreenProps<MainStackParamList, 'DemographicSurvey'>;
 
@@ -134,7 +135,7 @@ export const DemographicSurveyScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.background} />
-      
+      <BackgroundDoodles />
       {/* Header Section */}
       <View style={styles.header}>
         <View style={styles.headerIconContainer}>
@@ -240,6 +241,8 @@ export const DemographicSurveyScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: 20,
+    paddingBottom: 20,
   },
   background: {
     position: 'absolute',

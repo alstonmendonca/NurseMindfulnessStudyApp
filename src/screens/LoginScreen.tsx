@@ -6,6 +6,7 @@ import { Screen } from '../components/Screen';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../contexts/AuthContext';
+import { BackgroundDoodles } from '../components/BackgroundDoodles';
 
 const { width, height } = Dimensions.get('window');
 
@@ -36,7 +37,8 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>      
+    <View style={styles.container}>
+      <BackgroundDoodles />
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoid}
@@ -140,6 +142,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+    paddingTop: 20,
+    paddingBottom: 20,
   },
   keyboardAvoid: {
     flex: 1,
@@ -199,7 +203,7 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 16,
     fontFamily: theme.typography.fontFamily.medium,
-    color: theme.colors.background, // Dark blue for better visibility on light surface
+    color: '#FFFFFF',
     marginLeft: theme.spacing.sm,
   },
   inputWrapper: {

@@ -17,6 +17,9 @@
       "bundleIdentifier": "com.anonymous.shanthi",
       "runtimeVersion": {
         "policy": "appVersion"
+      },
+      "infoPlist": {
+        "UIBackgroundModes": ["audio"]
       }
     },
     "android": {

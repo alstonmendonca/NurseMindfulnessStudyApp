@@ -1,9 +1,16 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainStackParamList } from './types';
-import { HomeScreen } from '../screens/HomeScreen';
+import { TabNavigator } from './TabNavigator';
 import { DemographicSurveyScreen } from '../screens/DemographicSurveyScreen';
 import { LoadingScreen } from '../screens/LoadingScreen';
+import { MeditateScreen } from '../screens/MeditateScreen';
+import { MindfulnessScreen } from '../screens/MindfulnessScreen';
+import { BreathingScreen } from '../screens/BreathingScreen';
+import { MoveScreen } from '../screens/MoveScreen';
+import { CourseDetailScreen } from '../screens/CourseDetailScreen';
+import { AudioPlayerScreen } from '../screens/AudioPlayerScreen';
+import { VideoPlayerScreen } from '../screens/VideoPlayerScreen';
 import { useAuth } from '../contexts/AuthContext';
 import { theme } from '../constants/theme';
 
@@ -29,11 +36,48 @@ export const MainNavigator = () => {
           options={{ headerShown: false }}
         />
       ) : demographicSurveyCompleted ? (
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{ headerShown: false }}
-        />
+        <>
+          <Stack.Screen
+            name="HomeTabs"
+            component={TabNavigator}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Meditate"
+            component={MeditateScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Mindfulness"
+            component={MindfulnessScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Breathing"
+            component={BreathingScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Move"
+            component={MoveScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="CourseDetail"
+            component={CourseDetailScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="AudioPlayer"
+            component={AudioPlayerScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="VideoPlayer"
+            component={VideoPlayerScreen}
+            options={{ headerShown: false }}
+          />
+        </>
       ) : (
         <Stack.Screen
           name="DemographicSurvey"

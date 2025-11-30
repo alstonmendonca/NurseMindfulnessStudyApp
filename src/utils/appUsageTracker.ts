@@ -4,6 +4,10 @@ import { networkManager, ConnectivityState } from './networkManager';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const OFFLINE_QUEUE_KEY = '@app_usage_offline_queue';
+const AUDIO_PLAYBACK_KEY = '@audio_is_playing';
+
+// Enable app usage tracking
+const TRACKING_ENABLED = true;
 
 export interface AppUsageSession {
   id?: number;
@@ -34,9 +38,16 @@ class AppUsageTracker {
   private networkListener: ((state: ConnectivityState) => void) | null = null;
   private isInitialized: boolean = false;
   private isInitializing: boolean = false;
+  private isAudioPlaying: boolean = false;
 
   // Initialize tracking for a participant
   async initializeTracking(participantNumber: number): Promise<void> {
+    // Check if tracking is enabled
+    if (!TRACKING_ENABLED) {
+      console.log('🚫 App usage tracking is DISABLED (development mode)');
+      return;
+    }
+
     // Prevent concurrent initialization
     if (this.isInitializing) {
       console.log('⏳ Initialization already in progress, waiting...');
@@ -287,6 +298,8 @@ class AppUsageTracker {
 
   // Start a new session
   private async startSession(): Promise<void> {
+    if (!TRACKING_ENABLED) return; // Skip if tracking disabled
+    
     if (!this.participantNumber || this.currentSessionId) return;
 
     // Only start session if online
@@ -410,6 +423,45 @@ class AppUsageTracker {
     }
   }
 
+  // Set background audio timeout - end session after 2 hours if still in background
+  private setBackgroundAudioTimeout(): void {
+    this.clearBackgroundTimeout();
+    // End session after 2 hours of background audio (safety measure)
+    this.backgroundTimeoutId = setTimeout(async () => {
+      console.log('⏰ Background audio timeout - ending session after 2 hours');
+      if (this.currentSessionId && this.currentAppState !== 'active') {
+        await this.endSession();
+      }
+    }, 2 * 60 * 60 * 1000); // 2 hours
+  }
+
+  // Check if audio is currently playing
+  private async checkAudioPlayback(): Promise<boolean> {
+    try {
+      const audioState = await AsyncStorage.getItem(AUDIO_PLAYBACK_KEY);
+      return audioState === 'true';
+    } catch (error) {
+      console.error('Error checking audio playback:', error);
+      return false;
+    }
+  }
+
+  // Set audio playback state (to be called from AudioPlayerScreen)
+  async setAudioPlaybackState(isPlaying: boolean): Promise<void> {
+    try {
+      await AsyncStorage.setItem(AUDIO_PLAYBACK_KEY, isPlaying.toString());
+      this.isAudioPlaying = isPlaying;
+      
+      // If audio stopped while in background, end session
+      if (!isPlaying && this.currentAppState !== 'active' && this.currentSessionId) {
+        console.log('Audio stopped in background - ending session');
+        await this.endSession();
+      }
+    } catch (error) {
+      console.error('Error setting audio playback state:', error);
+    }
+  }
+
   // Fast end session for logout - fire and forget
   private endSessionFast(): void {
     if (!this.currentSessionId || !this.sessionStartTime) {
@@ -469,13 +521,21 @@ class AppUsageTracker {
     const previousState = this.currentAppState;
     this.currentAppState = nextAppState;
 
-    // App is going to background or becoming inactive - end session immediately
+    // Check if audio is playing
+    const audioPlaying = await this.checkAudioPlayback();
+
+    // App is going to background or becoming inactive
     if ((nextAppState === 'background' || nextAppState === 'inactive') && 
         previousState === 'active') {
-      console.log('App going to background - ending session immediately');
       
-      // CRITICAL FIX: Use the existing endSession method instead of duplicating logic
-      await this.endSession();
+      if (audioPlaying) {
+        console.log('App going to background but audio is playing - keeping session active');
+        // Don't end session, but set a longer timeout in case audio stops
+        this.setBackgroundAudioTimeout();
+      } else {
+        console.log('App going to background - ending session immediately');
+        await this.endSession();
+      }
     } 
     // App is becoming active from background/inactive
     else if (nextAppState === 'active' && 
