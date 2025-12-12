@@ -5,9 +5,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const OFFLINE_QUEUE_KEY = '@app_usage_offline_queue';
 const AUDIO_PLAYBACK_KEY = '@audio_is_playing';
+const ACTIVE_SESSION_KEY = '@active_session'; // NEW: Persist active session for crash recovery
 
 // Enable app usage tracking
-const TRACKING_ENABLED = false;
+const TRACKING_ENABLED = true;
+
+// How often to update duration in database (for crash recovery)
+const DURATION_UPDATE_INTERVAL_MS = 60 * 1000; // Every 1 minute
 
 export interface AppUsageSession {
   id?: number;
@@ -26,6 +30,13 @@ interface OfflineSessionEnd {
   timestamp: number;
 }
 
+// NEW: Interface for persisted session state
+interface PersistedSession {
+  sessionId: number;
+  sessionStart: string;
+  participantNumber: number;
+}
+
 class AppUsageTracker {
   private currentSessionId: number | null = null;
   private sessionStartTime: Date | null = null;
@@ -34,6 +45,7 @@ class AppUsageTracker {
   private currentAppState: AppStateStatus = 'active';
   private sessionTimeoutId: ReturnType<typeof setTimeout> | null = null;
   private backgroundTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private durationUpdateIntervalId: ReturnType<typeof setInterval> | null = null; // NEW
   private isOnline: boolean = false;
   private networkListener: ((state: ConnectivityState) => void) | null = null;
   private isInitialized: boolean = false;
@@ -76,6 +88,9 @@ class AppUsageTracker {
       
       // Initialize network monitoring
       await this.initializeNetworkMonitoring();
+      
+      // NEW: Try to recover any crashed session first
+      await this.recoverCrashedSession();
       
       // Clean up any orphaned sessions on app start
       await this.cleanupOrphanedSessions();
@@ -141,6 +156,151 @@ class AppUsageTracker {
     // Sync any pending offline session ends when initializing
     if (this.isOnline) {
       await this.syncOfflineQueue();
+    }
+  }
+
+  // NEW: Persist active session to storage for crash recovery
+  private async persistActiveSession(): Promise<void> {
+    if (!this.currentSessionId || !this.sessionStartTime || !this.participantNumber) {
+      return;
+    }
+    
+    try {
+      const sessionData: PersistedSession = {
+        sessionId: this.currentSessionId,
+        sessionStart: this.sessionStartTime.toISOString(),
+        participantNumber: this.participantNumber,
+      };
+      await AsyncStorage.setItem(ACTIVE_SESSION_KEY, JSON.stringify(sessionData));
+    } catch (error) {
+      console.error('Error persisting active session:', error);
+    }
+  }
+
+  // NEW: Clear persisted session
+  private async clearPersistedSession(): Promise<void> {
+    try {
+      await AsyncStorage.removeItem(ACTIVE_SESSION_KEY);
+    } catch (error) {
+      console.error('Error clearing persisted session:', error);
+    }
+  }
+
+  // NEW: Recover session that was interrupted by app crash/force close
+  private async recoverCrashedSession(): Promise<void> {
+    try {
+      const persistedJson = await AsyncStorage.getItem(ACTIVE_SESSION_KEY);
+      if (!persistedJson) return;
+
+      const persisted: PersistedSession = JSON.parse(persistedJson);
+      
+      // Only recover if it's for the same participant
+      if (persisted.participantNumber !== this.participantNumber) {
+        console.log('Persisted session is for different participant - clearing');
+        await this.clearPersistedSession();
+        return;
+      }
+
+      const sessionStart = new Date(persisted.sessionStart);
+      const now = new Date();
+      const sessionAgeMs = now.getTime() - sessionStart.getTime();
+      const sessionAgeHours = sessionAgeMs / (1000 * 60 * 60);
+
+      // If session is older than 4 hours, it's likely stale
+      if (sessionAgeHours > 4) {
+        console.log(`⚠️ Recovered session too old (${sessionAgeHours.toFixed(1)}h) - ending it with estimated duration`);
+        
+        // End with a reasonable estimate (cap at 10 minutes)
+        const estimatedDurationMinutes = Math.min(10, Math.round(sessionAgeMs / (1000 * 60)));
+        
+        if (this.isOnline) {
+          await supabase
+            .from('app_usage_sessions')
+            .update({
+              session_end: now.toISOString(),
+              duration_minutes: estimatedDurationMinutes,
+            })
+            .eq('id', persisted.sessionId);
+        } else {
+          await this.queueOfflineSessionEnd(persisted.sessionId, now.toISOString(), estimatedDurationMinutes);
+        }
+        
+        await this.clearPersistedSession();
+        return;
+      }
+
+      // Session is recent - check if it's still open in DB
+      console.log(`🔄 Found recent crashed session (${persisted.sessionId}) - checking database...`);
+      
+      const { data, error } = await supabase
+        .from('app_usage_sessions')
+        .select('id, session_end')
+        .eq('id', persisted.sessionId)
+        .single();
+
+      if (error || !data) {
+        console.log('Crashed session not found in database - clearing');
+        await this.clearPersistedSession();
+        return;
+      }
+
+      if (data.session_end) {
+        console.log('Crashed session already ended in database - clearing');
+        await this.clearPersistedSession();
+        return;
+      }
+
+      // Session still open - restore it
+      console.log(`✅ Restoring crashed session ${persisted.sessionId}`);
+      this.currentSessionId = persisted.sessionId;
+      this.sessionStartTime = sessionStart;
+      
+      // Start periodic duration updates for the restored session
+      this.startDurationUpdateInterval();
+      this.setSessionTimeout();
+      
+    } catch (error) {
+      console.error('Error recovering crashed session:', error);
+      await this.clearPersistedSession();
+    }
+  }
+
+  // NEW: Start periodic duration updates to database
+  private startDurationUpdateInterval(): void {
+    this.stopDurationUpdateInterval();
+    
+    this.durationUpdateIntervalId = setInterval(async () => {
+      if (!this.currentSessionId || !this.sessionStartTime || !this.isOnline) {
+        return;
+      }
+
+      try {
+        const now = new Date();
+        const durationMs = now.getTime() - this.sessionStartTime.getTime();
+        const durationMinutes = Math.max(1, Math.round(durationMs / (1000 * 60)));
+
+        // Update duration in database (session_end stays null until session actually ends)
+        const { error } = await supabase
+          .from('app_usage_sessions')
+          .update({
+            duration_minutes: durationMinutes,
+          })
+          .eq('id', this.currentSessionId);
+
+        if (!error) {
+          console.log(`📊 Updated session ${this.currentSessionId} duration: ${durationMinutes} min`);
+        }
+      } catch (error) {
+        // Silently fail - not critical
+      }
+    }, DURATION_UPDATE_INTERVAL_MS);
+  }
+
+  // NEW: Stop periodic duration updates
+  private stopDurationUpdateInterval(): void {
+    if (this.durationUpdateIntervalId) {
+      clearInterval(this.durationUpdateIntervalId);
+      this.durationUpdateIntervalId = null;
     }
   }
 
@@ -269,6 +429,7 @@ class AppUsageTracker {
     this.endSessionFast();
     this.stopAppStateListener();
     this.clearSessionTimeout();
+    this.stopDurationUpdateInterval(); // NEW
     
     // Clean up network monitoring
     if (this.networkListener) {
@@ -285,6 +446,7 @@ class AppUsageTracker {
     await this.endSession();
     this.stopAppStateListener();
     this.clearSessionTimeout();
+    this.stopDurationUpdateInterval(); // NEW
     
     // Clean up network monitoring
     if (this.networkListener) {
@@ -334,6 +496,12 @@ class AppUsageTracker {
       this.currentSessionId = data.id;
       // Session started successfully (log removed to avoid duplicate with HomeScreen)
       
+      // Persist session to storage for recovery after force kills
+      await this.persistActiveSession();
+      
+      // Start periodic duration updates (every 60 seconds)
+      this.startDurationUpdateInterval();
+      
       // Set up timeout
       this.setSessionTimeout();
     } catch (error) {
@@ -358,6 +526,10 @@ class AppUsageTracker {
     this.sessionStartTime = null;
     this.clearSessionTimeout();
     this.clearBackgroundTimeout();
+    this.stopDurationUpdateInterval();
+    
+    // Clear persisted session since we're ending properly
+    await this.clearPersistedSession();
 
     try {
       const sessionEndTime = new Date();
@@ -452,10 +624,18 @@ class AppUsageTracker {
       await AsyncStorage.setItem(AUDIO_PLAYBACK_KEY, isPlaying.toString());
       this.isAudioPlaying = isPlaying;
       
-      // If audio stopped while in background, end session
+      // If audio stopped while in background, end session immediately
       if (!isPlaying && this.currentAppState !== 'active' && this.currentSessionId) {
-        console.log('Audio stopped in background - ending session');
+        console.log('Audio stopped in background - ending session immediately');
+        this.stopDurationUpdateInterval();
+        await this.clearPersistedSession();
         await this.endSession();
+      }
+      
+      // If audio started playing in background, make sure session is persisted
+      if (isPlaying && this.currentAppState !== 'active' && this.currentSessionId) {
+        console.log('Audio playing in background - ensuring session is persisted');
+        await this.persistActiveSession();
       }
     } catch (error) {
       console.error('Error setting audio playback state:', error);
@@ -534,6 +714,9 @@ class AppUsageTracker {
         this.setBackgroundAudioTimeout();
       } else {
         console.log('App going to background - ending session immediately');
+        // Stop duration updates and clear persisted session since we're ending properly
+        this.stopDurationUpdateInterval();
+        await this.clearPersistedSession();
         await this.endSession();
       }
     } 
@@ -541,6 +724,8 @@ class AppUsageTracker {
     else if (nextAppState === 'active' && 
              (previousState === 'background' || previousState === 'inactive')) {
       console.log('App becoming active - starting new session');
+      // Clear any background timeout
+      this.clearBackgroundTimeout();
       // Small delay to ensure state is stable
       setTimeout(async () => {
         if (this.currentAppState === 'active' && !this.currentSessionId) {
