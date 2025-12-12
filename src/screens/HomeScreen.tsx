@@ -138,39 +138,27 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
         <View style={styles.grid}>
           <TouchableOpacity 
-            style={[styles.card, { backgroundColor: '#C36B32' }]}
+            style={[styles.card, { backgroundColor: 'rgba(195, 107, 50, 0.6)' }]}
             onPress={() => navigation.navigate('Meditate')}
           >
-            <View style={styles.cardPattern1} />
-            <View style={styles.cardPattern1b} />
-            <View style={styles.cardPattern1c} />
             <Text style={styles.cardText}>Meditate</Text>
           </TouchableOpacity>
           <TouchableOpacity 
-            style={[styles.card, { backgroundColor: '#3A2477' }]}
+            style={[styles.card, { backgroundColor: 'rgba(58, 36, 119, 0.6)' }]}
             onPress={() => navigation.navigate('Mindfulness')}
           >
-            <View style={styles.cardPattern2} />
-            <View style={styles.cardPattern2b} />
-            <View style={styles.cardPattern2c} />
             <Text style={styles.cardText}>Mindfulness</Text>
           </TouchableOpacity>
           <TouchableOpacity 
-            style={[styles.card, { backgroundColor: '#C25A99' }]}
+            style={[styles.card, { backgroundColor: 'rgba(194, 90, 153, 0.6)' }]}
             onPress={() => navigation.navigate('Move')}
           >
-            <View style={styles.cardPattern3} />
-            <View style={styles.cardPattern3b} />
-            <View style={styles.cardPattern3c} />
             <Text style={styles.cardText}>Move</Text>
           </TouchableOpacity>
           <TouchableOpacity 
-            style={[styles.card, { backgroundColor: '#1960CC' }]}
+            style={[styles.card, { backgroundColor: 'rgba(25, 96, 204, 0.6)' }]}
             onPress={() => navigation.navigate('Breathing')}
           >
-            <View style={styles.cardPattern4} />
-            <View style={styles.cardPattern4b} />
-            <View style={styles.cardPattern4c} />
             <Text style={styles.cardText}>Breathing</Text>
           </TouchableOpacity>
         </View>
@@ -185,20 +173,17 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 </Text>
               )}
             </View>
-            <View style={{ flexDirection: 'row', gap: 12 }}>
-              <TouchableOpacity>
-                <Ionicons name="calendar-outline" size={24} color="#fff" />
-              </TouchableOpacity>
-              <TouchableOpacity 
-                onPress={() => {
-                  console.log('Add button pressed, opening modal');
-                  setShowAddModal(true);
-                }}
-                style={styles.addIconButton}
-              >
-                <Ionicons name="add-circle" size={28} color="#3A2477" />
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity 
+              onPress={() => {
+                console.log('Add button pressed, opening modal');
+                setShowAddModal(true);
+              }}
+              style={styles.addIconButton}
+              activeOpacity={0.6}
+              hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}
+            >
+              <Ionicons name="add-circle" size={28} color="#3A2477" />
+            </TouchableOpacity>
           </View>
           
           {activities.map((activity) => (
@@ -250,14 +235,10 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           setNewActivityText('');
         }}
       >
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.modalOverlay}
-        >
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View style={styles.modalOverlay}>
-              <TouchableWithoutFeedback onPress={() => {}}>
-                <View style={styles.modalContent}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View style={styles.modalContent}>
                   <Text style={styles.modalTitle}>Add New Activity</Text>
                   <TextInput
                     style={styles.input}
@@ -291,7 +272,6 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
               </TouchableWithoutFeedback>
             </View>
           </TouchableWithoutFeedback>
-        </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
   );
@@ -300,7 +280,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#050726', paddingTop: 20, paddingBottom: 20 },
   content: { padding: 20, paddingBottom: 100 },
-  banner: { backgroundColor: '#101340', borderRadius: 20, padding: 24, marginBottom: 20 },
+  banner: { backgroundColor: 'rgba(16, 19, 64, 0.6)', borderRadius: 20, padding: 24, marginBottom: 20 },
   quote: { fontSize: 18, fontStyle: 'italic', color: '#E5E7EC', marginBottom: 8 },
   title: { fontSize: 20, fontWeight: '600', color: '#E5E7EC' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 24 },
@@ -426,7 +406,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.07)',
     transform: [{ rotate: '25deg' }],
   },
-  cardText: { fontSize: 20, fontWeight: '600', color: '#E5E7EC', zIndex: 1 },
+  cardText: { fontSize: 20, fontWeight: '600', color: '#E5E7EC' },
   routine: { marginTop: 8 },
   header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
   routineTitle: { fontSize: 24, fontWeight: '700', color: '#E5E7EC' },
@@ -468,7 +448,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
@@ -477,8 +457,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#101340',
     borderRadius: 16,
     padding: 24,
-    width: '90%',
-    maxWidth: 500,
+    width: '95%',
+    maxWidth: 600,
   },
   modalTitle: {
     fontSize: 20,

@@ -19,7 +19,9 @@
         "policy": "appVersion"
       },
       "infoPlist": {
-        "UIBackgroundModes": ["audio"]
+        "UIBackgroundModes": [
+          "audio"
+        ]
       }
     },
     "android": {
@@ -44,7 +46,8 @@
     },
     "plugins": [
       "expo-audio",
-      "expo-video"
+      "expo-video",
+      "react-native-video"
     ],
     "assetBundlePatterns": [
       "**/*",

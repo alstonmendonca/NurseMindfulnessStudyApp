@@ -7,7 +7,7 @@ const OFFLINE_QUEUE_KEY = '@app_usage_offline_queue';
 const AUDIO_PLAYBACK_KEY = '@audio_is_playing';
 
 // Enable app usage tracking
-const TRACKING_ENABLED = true;
+const TRACKING_ENABLED = false;
 
 export interface AppUsageSession {
   id?: number;

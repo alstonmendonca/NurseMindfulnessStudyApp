@@ -6,8 +6,6 @@ import { appUsageTracker } from '../utils/appUsageTracker';
 interface AuthContextType {
   participantNumber: number | null;
   login: (number: string, password: string) => Promise<void>;
-  demographicSurveyCompleted: boolean;
-  setDemographicSurveyCompleted: (value: boolean) => void;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -27,7 +25,6 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const [participantNumber, setParticipantNumber] = useState<number | null>(null);
-  const [demographicSurveyCompleted, setDemographicSurveyCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
 
@@ -38,17 +35,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const storedAuth = await getStoredAuth();
         if (storedAuth) {
           setParticipantNumber(storedAuth.participantNumber);
-          
-          // Check demographic survey completion status from participants table
-          const { data: participantData, error: participantError } = await supabase
-            .from('participants')
-            .select('demographic_survey_completed')
-            .eq('participant_number', storedAuth.participantNumber)
-            .single();
-          
-          const hasDemographicSurveyCompleted = !participantError && participantData?.demographic_survey_completed === true;
-          setDemographicSurveyCompleted(hasDemographicSurveyCompleted);
-          
           // Note: App usage tracking will be started from HomeScreen after it loads
         }
       } catch (error) {
@@ -62,11 +48,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Effect to handle usage tracking when auth state changes
   useEffect(() => {
     const handleUsageTracking = async () => {
-      if (participantNumber && demographicSurveyCompleted) {
+      if (participantNumber) {
         // Tracking will be started from HomeScreen after it loads properly
         // This ensures we don't start tracking during loading screens
       } else {
-        // Stop tracking when user logs out or doesn't meet criteria
+        // Stop tracking when user logs out
         await appUsageTracker.stopTracking();
       }
     };
@@ -75,7 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!isInitializing) {
       handleUsageTracking();
     }
-  }, [participantNumber, demographicSurveyCompleted, isInitializing]);
+  }, [participantNumber, isInitializing]);
 
   const login = async (number: string, password: string) => {
     setIsLoading(true);
@@ -92,11 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const parsedNumber = parseInt(data.participant_number);
       
-      // Check demographic survey completion status from participants table
-      const hasDemographicSurveyCompleted = data.demographic_survey_completed === true;
-      
       setParticipantNumber(parsedNumber);
-      setDemographicSurveyCompleted(hasDemographicSurveyCompleted);
       await storeAuth(parsedNumber, false); // No longer storing onboarding status
     } catch (error) {
       console.error('Error logging in:', error);
@@ -111,7 +93,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     appUsageTracker.stopTrackingFast(); // Use non-blocking version
     
     setParticipantNumber(null);
-    setDemographicSurveyCompleted(false);
     setIsLoading(false);
     await clearStoredAuth();
   };
@@ -120,26 +101,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider
       value={{
         participantNumber,
-        demographicSurveyCompleted,
-        setDemographicSurveyCompleted: async (value: boolean) => {
-          setDemographicSurveyCompleted(value);
-          
-          // Update the participants table with the completion status
-          if (participantNumber) {
-            try {
-              const { error } = await supabase
-                .from('participants')
-                .update({ demographic_survey_completed: value })
-                .eq('participant_number', participantNumber);
-                
-              if (error) {
-                console.error('Error updating demographic survey completion status:', error);
-              }
-            } catch (error) {
-              console.error('Error updating demographic survey completion status:', error);
-            }
-          }
-        },
         login,
         logout,
         isAuthenticated: !!participantNumber,

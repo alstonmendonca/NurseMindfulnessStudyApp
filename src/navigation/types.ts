@@ -9,7 +9,6 @@ export type RootStackParamList = {
 export type MainStackParamList = {
   Loading: undefined;
   HomeTabs: NavigatorScreenParams<TabParamList>;
-  DemographicSurvey: undefined;
   Meditate: undefined;
   Mindfulness: undefined;
   Breathing: undefined;

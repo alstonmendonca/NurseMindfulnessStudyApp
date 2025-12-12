@@ -224,7 +224,7 @@ export const meditationContent: MediaItem[] = [
     duration: '5 min',
     category: '5 Minute Meditations',
     thumbnail: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=14HUaS3arZL_1nNfgfx0kYLRubLByXkFQ',
+    url: 'https://drive.google.com/uc?export=view&id=14HUaS3arZL_1nNfgfx0kYLRubLByXkFQ',
     type: 'audio',
   },
   {
@@ -234,7 +234,7 @@ export const meditationContent: MediaItem[] = [
     duration: '5 min',
     category: '5 Minute Meditations',
     thumbnail: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=1ios3BHt5JqceXQGNUHq2ohS845IAOgVy',
+    url: 'https://drive.google.com/uc?export=view&id=1ios3BHt5JqceXQGNUHq2ohS845IAOgVy',
     type: 'audio',
   },
   {
@@ -244,7 +244,7 @@ export const meditationContent: MediaItem[] = [
     duration: '10 min',
     category: '10 Minute Meditations',
     thumbnail: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=1z342eFasOeMLAs92wQEWTsbecguDVJPt',
+    url: 'https://drive.google.com/uc?export=view&id=1z342eFasOeMLAs92wQEWTsbecguDVJPt',
     type: 'audio',
   },
   {
@@ -254,7 +254,7 @@ export const meditationContent: MediaItem[] = [
     duration: '10 min',
     category: '10 Minute Meditations',
     thumbnail: 'https://images.unsplash.com/photo-1511593358241-7eea1f3c84e5?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=1HG6QpXbbqIl6HZQvdxB3PLcs7RtnFXUG',
+    url: 'https://drive.google.com/uc?export=view&id=1HG6QpXbbqIl6HZQvdxB3PLcs7RtnFXUG',
     type: 'audio',
   },
   {
@@ -263,7 +263,7 @@ export const meditationContent: MediaItem[] = [
     duration: '12 min',
     category: 'Guided Meditation',
     thumbnail: 'https://images.unsplash.com/photo-1528715471579-d1bcf0ba5e83?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=1MrEzLQf9cPhwEVZUCkiXDEoOg9DMUmuH',
+    url: 'https://drive.google.com/uc?export=view&id=1MrEzLQf9cPhwEVZUCkiXDEoOg9DMUmuH',
     type: 'audio',
   },
   {
@@ -272,7 +272,7 @@ export const meditationContent: MediaItem[] = [
     duration: '15 min',
     category: 'Guided Meditation',
     thumbnail: 'https://images.unsplash.com/photo-1602192509154-0b900ee1f851?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=1p2tpFTnMaruPKPqirl2gRCBtQ-f3maDQ',
+    url: 'https://drive.google.com/uc?export=view&id=1p2tpFTnMaruPKPqirl2gRCBtQ-f3maDQ',
     type: 'audio',
   },
   {
@@ -281,7 +281,7 @@ export const meditationContent: MediaItem[] = [
     duration: '20 min',
     category: 'Guided Meditation',
     thumbnail: 'https://images.unsplash.com/photo-1593811167562-9cef47bfc4d7?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=1mU9Yr6aAgWJBAisac6baJgPr0iJZbGu7',
+    url: 'https://drive.google.com/uc?export=view&id=1mU9Yr6aAgWJBAisac6baJgPr0iJZbGu7',
     type: 'audio',
   },
 ];
@@ -340,7 +340,7 @@ export const natureSounds: MediaItem[] = [
     duration: '30 min',
     category: 'Nature Sounds',
     thumbnail: 'https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=1eiuIUXssfNrLqxF4bjXPoD8nPgEhS1bf',
+    url: 'https://drive.google.com/uc?export=view&id=1eiuIUXssfNrLqxF4bjXPoD8nPgEhS1bf',
     type: 'audio',
   },
   {
@@ -349,7 +349,7 @@ export const natureSounds: MediaItem[] = [
     duration: '30 min',
     category: 'Nature Sounds',
     thumbnail: 'https://images.unsplash.com/photo-1428908728789-d2de25dbd4e2?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=1aSnZXU2V_ZfNZpMtLdZrwyZdLYZj02u3',
+    url: 'https://drive.google.com/uc?export=view&id=1aSnZXU2V_ZfNZpMtLdZrwyZdLYZj02u3',
     type: 'audio',
   },
   {
@@ -358,7 +358,7 @@ export const natureSounds: MediaItem[] = [
     duration: '30 min',
     category: 'Nature Sounds',
     thumbnail: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=1aYU4sLnpWM0MMSli4dU2oeIKo8JgOdOh',
+    url: 'https://drive.google.com/uc?export=view&id=1aYU4sLnpWM0MMSli4dU2oeIKo8JgOdOh',
     type: 'audio',
   },
   {
@@ -367,7 +367,7 @@ export const natureSounds: MediaItem[] = [
     duration: '30 min',
     category: 'Nature Sounds',
     thumbnail: 'https://images.unsplash.com/photo-1605727216801-e27ce1d0cc28?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=1md6XBXJ31J9zuYF9HylHkIN07sqQy7P4',
+    url: 'https://drive.google.com/uc?export=view&id=1md6XBXJ31J9zuYF9HylHkIN07sqQy7P4',
     type: 'audio',
   },
   {
@@ -376,7 +376,7 @@ export const natureSounds: MediaItem[] = [
     duration: '30 min',
     category: 'Nature Sounds',
     thumbnail: 'https://images.unsplash.com/photo-1501706362039-c06b2d715385?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=18HqgeTiuBoLF8mMr9MxdQBkdmW_iLMgP',
+    url: 'https://drive.google.com/uc?export=view&id=18HqgeTiuBoLF8mMr9MxdQBkdmW_iLMgP',
     type: 'audio',
   },
   {
@@ -385,7 +385,7 @@ export const natureSounds: MediaItem[] = [
     duration: '30 min',
     category: 'Nature Sounds',
     thumbnail: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=1KPdEXVUkQkwzbxieviwANtR-uYE_pNJA',
+    url: 'https://drive.google.com/uc?export=view&id=1KPdEXVUkQkwzbxieviwANtR-uYE_pNJA',
     type: 'audio',
   },
 ];
@@ -398,7 +398,7 @@ export const ambientSounds: MediaItem[] = [
     duration: '60 min',
     category: 'Ambient Sounds',
     thumbnail: 'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=1lZrazuSfSLddfvbNAmccbHni4GkJUsmj',
+    url: 'https://drive.google.com/uc?export=view&id=1lZrazuSfSLddfvbNAmccbHni4GkJUsmj',
     type: 'audio',
   },
   {
@@ -407,7 +407,7 @@ export const ambientSounds: MediaItem[] = [
     duration: '60 min',
     category: 'Ambient Sounds',
     thumbnail: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=1ihAWYMsPJtNdLM4xwlXlb4uUFPUdd0ON',
+    url: 'https://drive.google.com/uc?export=view&id=1ihAWYMsPJtNdLM4xwlXlb4uUFPUdd0ON',
     type: 'audio',
   },
   {
@@ -416,7 +416,7 @@ export const ambientSounds: MediaItem[] = [
     duration: '60 min',
     category: 'Ambient Sounds',
     thumbnail: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=1Zy170rZyvhvHJryYEIMRx7igOhRLhE23',
+    url: 'https://drive.google.com/uc?export=view&id=1Zy170rZyvhvHJryYEIMRx7igOhRLhE23',
     type: 'audio',
   },
   {
@@ -425,7 +425,7 @@ export const ambientSounds: MediaItem[] = [
     duration: '60 min',
     category: 'Ambient Sounds',
     thumbnail: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=1xRTdhu3KDZpOaDhQOZG5JfEeZFaFXfCV',
+    url: 'https://drive.google.com/uc?export=view&id=1xRTdhu3KDZpOaDhQOZG5JfEeZFaFXfCV',
     type: 'audio',
   },
   {
@@ -434,7 +434,7 @@ export const ambientSounds: MediaItem[] = [
     duration: '60 min',
     category: 'Ambient Sounds',
     thumbnail: 'https://images.unsplash.com/photo-1614850523296-7c2f414c2355?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=1SpjLNGr8mW7XsXQ_Uv4i0BHeTdfPh0cU',
+    url: 'https://drive.google.com/uc?export=view&id=1SpjLNGr8mW7XsXQ_Uv4i0BHeTdfPh0cU',
     type: 'audio',
   },
 ];
@@ -448,7 +448,7 @@ export const moveVideos: MediaItem[] = [
     duration: '5 min',
     category: 'Daily Stretch',
     thumbnail: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=1yv6HG6dFfh-cT7LFHox2JM4yztuHXjrG',
+    url: 'https://drive.google.com/uc?export=view&id=1yv6HG6dFfh-cT7LFHox2JM4yztuHXjrG',
     type: 'video',
   },
   {
@@ -458,7 +458,7 @@ export const moveVideos: MediaItem[] = [
     duration: '5 min',
     category: 'Daily Stretch',
     thumbnail: 'https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=11jLnilwWVuTlWHBKlYqMSIftqnewotdH',
+    url: 'https://drive.google.com/uc?export=view&id=11jLnilwWVuTlWHBKlYqMSIftqnewotdH',
     type: 'video',
   },
   {
@@ -468,7 +468,7 @@ export const moveVideos: MediaItem[] = [
     duration: '5 min',
     category: 'Morning Stretch',
     thumbnail: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=1LkE2sTeDDOuHBKGFmvIp3WVz3q7bqdhh',
+    url: 'https://drive.google.com/uc?export=view&id=1LkE2sTeDDOuHBKGFmvIp3WVz3q7bqdhh',
     type: 'video',
   },
 ];
@@ -496,7 +496,7 @@ export const breathingVideos: MediaItem[] = [
     duration: '2 min',
     category: 'Guided Breathing',
     thumbnail: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=1KQ6K--SAVrR1w6sZdOcxTv3xiFboiw2V',
+    url: 'https://drive.google.com/uc?export=view&id=1KQ6K--SAVrR1w6sZdOcxTv3xiFboiw2V',
     type: 'video',
   },
   {
@@ -506,7 +506,7 @@ export const breathingVideos: MediaItem[] = [
     duration: '5 min',
     category: 'Guided Breathing',
     thumbnail: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=11c_hmjSimLnJV7Kh--cfF22sE-kYYcA7',
+    url: 'https://drive.google.com/uc?export=view&id=11c_hmjSimLnJV7Kh--cfF22sE-kYYcA7',
     type: 'video',
   },
   {
@@ -516,7 +516,7 @@ export const breathingVideos: MediaItem[] = [
     duration: '10 min',
     category: 'Guided Breathing',
     thumbnail: 'https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=1g9pVLqHbW92hZIQpX8b3YV7jz6QM7izH',
+    url: 'https://drive.google.com/uc?export=view&id=1g9pVLqHbW92hZIQpX8b3YV7jz6QM7izH',
     type: 'video',
   },
   {
@@ -526,7 +526,7 @@ export const breathingVideos: MediaItem[] = [
     duration: '4 min',
     category: 'Meditation & Breathing',
     thumbnail: 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=1dQH0HAsYQZ3mh0qY2GJi0bxK6p1Gok96',
+    url: 'https://drive.google.com/uc?export=view&id=1dQH0HAsYQZ3mh0qY2GJi0bxK6p1Gok96',
     type: 'video',
   },
   {
@@ -536,7 +536,7 @@ export const breathingVideos: MediaItem[] = [
     duration: '15 min',
     category: 'Progressive Relaxation',
     thumbnail: 'https://images.unsplash.com/photo-1508672019048-805c876b67e2?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=1V9IuPajzrgBAs_uM_ImCIEp9cb8DhNXf',
+    url: 'https://drive.google.com/uc?export=view&id=1V9IuPajzrgBAs_uM_ImCIEp9cb8DhNXf',
     type: 'video',
   },
   {
@@ -546,7 +546,7 @@ export const breathingVideos: MediaItem[] = [
     duration: '20 min',
     category: 'Progressive Relaxation',
     thumbnail: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400',
-    url: 'https://drive.google.com/uc?export=download&id=15_M-x1XNNDGRCaG2-w48ild9Yifhod80',
+    url: 'https://drive.google.com/uc?export=view&id=15_M-x1XNNDGRCaG2-w48ild9Yifhod80',
     type: 'video',
   },
 ];

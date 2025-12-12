@@ -8,12 +8,13 @@ import {
   Dimensions,
   AppState,
   AppStateStatus,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../navigation/types';
 import { Ionicons } from '@expo/vector-icons';
-import { Audio } from 'expo-av';
+import { useAudioPlayer, AudioSource, setAudioModeAsync } from 'expo-audio';
 import Slider from '@react-native-community/slider';
 import { appUsageTracker } from '../utils/appUsageTracker';
 
@@ -31,21 +32,72 @@ export const AudioPlayerScreen: React.FC<Props> = ({ navigation, route }) => {
   const [currentThumbnail, setCurrentThumbnail] = useState(thumbnail);
   const [currentTitle, setCurrentTitle] = useState(title);
   const [currentUrl, setCurrentUrl] = useState(audioUrl);
-  const sound = useRef<Audio.Sound | null>(null);
+  const [isSeeking, setIsSeeking] = useState(false);
+  const [seekValue, setSeekValue] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  const player = useAudioPlayer(currentUrl);
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
+  const positionUpdateInterval = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    setupAudioMode();
-    loadAudio();
+    // Configure audio mode for playback
+    const setupAudio = async () => {
+      try {
+        await setAudioModeAsync({
+          playsInSilentMode: true,
+          shouldPlayInBackground: true,
+          interruptionModeAndroid: 'duckOthers',
+          shouldRouteThroughEarpiece: false,
+        });
+      } catch (e) {
+        console.log('Error setting audio mode:', e);
+      }
+    };
+    setupAudio();
+  }, []);
+
+  useEffect(() => {
+    // Reset state when URL changes
+    setIsLoading(true);
+    setCurrentTime(0);
+    setSeekValue(0);
+    setIsSeeking(false);
+    
+    // Start playing automatically
+    try {
+      player.play();
+    } catch (e) {
+      console.log('Error playing audio:', e);
+    }
     
     // Listen for app state changes to stop audio when app is terminated
     const subscription = AppState.addEventListener('change', handleAppStateChange);
     
+    // Update position every second
+    positionUpdateInterval.current = setInterval(() => {
+      try {
+        if (player.playing && !isSeeking) {
+          setCurrentTime(player.currentTime);
+        }
+        // Update loading state based on buffering
+        if (player.isBuffering !== isLoading) {
+           // We can use buffering state to show loading, but let's rely on isLoaded mostly
+        }
+      } catch (e) {
+        // Ignore errors accessing player properties
+      }
+    }, 100);
+    
     return () => {
       // Cleanup on unmount
-      if (sound.current) {
-        sound.current.stopAsync();
-        sound.current.unloadAsync();
+      if (positionUpdateInterval.current) {
+        clearInterval(positionUpdateInterval.current);
+      }
+      try {
+        player.pause();
+      } catch (e) {
+        // Ignore error if player is already released
       }
       // Notify tracker that audio stopped
       appUsageTracker.setAudioPlaybackState(false);
@@ -53,10 +105,22 @@ export const AudioPlayerScreen: React.FC<Props> = ({ navigation, route }) => {
     };
   }, [currentUrl]);
 
-  // Track playback state changes for app usage tracker
+  // Track playback state changes for app usage tracker and update duration
   useEffect(() => {
-    appUsageTracker.setAudioPlaybackState(isPlaying);
-  }, [isPlaying]);
+    setIsPlaying(player.playing);
+    appUsageTracker.setAudioPlaybackState(player.playing);
+    
+    if (player.duration) {
+      setTotalDuration(player.duration);
+    }
+    
+    // Update loading state
+    if (player.isLoaded && !player.isBuffering) {
+      setIsLoading(false);
+    } else if (player.isBuffering) {
+      setIsLoading(true);
+    }
+  }, [player.playing, player.duration, player.isLoaded, player.isBuffering]);
 
   const handleAppStateChange = async (nextAppState: AppStateStatus) => {
     // If app is going from background/inactive to terminated (unlikely to catch but worth trying)
@@ -64,42 +128,7 @@ export const AudioPlayerScreen: React.FC<Props> = ({ navigation, route }) => {
     appStateRef.current = nextAppState;
   };
 
-  const setupAudioMode = async () => {
-    try {
-      // Configure audio mode to allow background playback
-      // Note: Audio will stop when app is force-closed/swiped from recent apps
-      await Audio.setAudioModeAsync({
-        staysActiveInBackground: true,
-        playsInSilentModeIOS: true,
-        shouldDuckAndroid: true,
-        playThroughEarpieceAndroid: false,
-        interruptionModeIOS: 2, // DuckOthers
-        interruptionModeAndroid: 1, // DuckOthers
-      });
-    } catch (error) {
-      console.error('Error setting audio mode:', error);
-    }
-  };
-
-  const loadAudio = async () => {
-    try {
-      // Unload previous sound if exists
-      if (sound.current) {
-        await sound.current.unloadAsync();
-      }
-      
-      const { sound: audioSound } = await Audio.Sound.createAsync(
-        { uri: currentUrl },
-        { shouldPlay: true },
-        onPlaybackStatusUpdate
-      );
-      sound.current = audioSound;
-    } catch (error) {
-      console.error('Error loading audio:', error);
-    }
-  };
-
-  const playNextTrack = () => {
+  const playNextTrack = async () => {
     if (!playlist || activeTrackIndex >= playlist.length - 1) return;
     
     const nextIndex = activeTrackIndex + 1;
@@ -112,7 +141,7 @@ export const AudioPlayerScreen: React.FC<Props> = ({ navigation, route }) => {
     setCurrentTime(0);
   };
 
-  const playPreviousTrack = () => {
+  const playPreviousTrack = async () => {
     if (!playlist || activeTrackIndex <= 0) return;
     
     const prevIndex = activeTrackIndex - 1;
@@ -125,40 +154,43 @@ export const AudioPlayerScreen: React.FC<Props> = ({ navigation, route }) => {
     setCurrentTime(0);
   };
 
-  const onPlaybackStatusUpdate = (status: any) => {
-    if (status.isLoaded) {
-      setCurrentTime(status.positionMillis / 1000);
-      setTotalDuration(status.durationMillis ? status.durationMillis / 1000 : 0);
-      setIsPlaying(status.isPlaying);
-    }
-  };
-
-  const togglePlayPause = async () => {
-    if (!sound.current) return;
-    
-    if (isPlaying) {
-      await sound.current.pauseAsync();
+  const togglePlayPause = () => {
+    if (player.playing) {
+      player.pause();
     } else {
-      await sound.current.playAsync();
+      player.play();
     }
   };
 
-  const skipBackward = async () => {
-    if (!sound.current) return;
-    const newPosition = Math.max(0, currentTime - 15) * 1000;
-    await sound.current.setPositionAsync(newPosition);
+  const skipBackward = () => {
+    const newTime = Math.max(0, player.currentTime - 15);
+    player.seekTo(newTime);
+    setCurrentTime(newTime);
   };
 
-  const skipForward = async () => {
-    if (!sound.current) return;
-    const newPosition = Math.min(totalDuration, currentTime + 15) * 1000;
-    await sound.current.setPositionAsync(newPosition);
+  const skipForward = () => {
+    const newTime = Math.min(totalDuration, player.currentTime + 15);
+    player.seekTo(newTime);
+    setCurrentTime(newTime);
   };
 
-  const onSliderValueChange = async (value: number) => {
-    if (!sound.current) return;
-    const newPosition = value * totalDuration * 1000;
-    await sound.current.setPositionAsync(newPosition);
+  const handleSeekStart = () => {
+    setIsSeeking(true);
+    setSeekValue(totalDuration > 0 ? currentTime / totalDuration : 0);
+  };
+
+  const handleSeekChange = (value: number) => {
+    if (!isSeeking) {
+      setIsSeeking(true);
+    }
+    setSeekValue(value);
+  };
+
+  const handleSeekEnd = (value: number) => {
+    const newPosition = value * totalDuration;
+    player.seekTo(newPosition);
+    setCurrentTime(newPosition);
+    setIsSeeking(false);
   };
 
   const formatTime = (seconds: number) => {
@@ -195,7 +227,7 @@ export const AudioPlayerScreen: React.FC<Props> = ({ navigation, route }) => {
           </View>
 
           {/* Timer */}
-          <Text style={styles.timer}>{formatTime(totalDuration - currentTime)}</Text>
+          <Text style={styles.timer}>{formatTime(totalDuration - (isSeeking ? seekValue * totalDuration : currentTime))}</Text>
 
           {/* Title */}
           <View style={styles.infoContainer}>
@@ -208,15 +240,17 @@ export const AudioPlayerScreen: React.FC<Props> = ({ navigation, route }) => {
               style={styles.slider}
               minimumValue={0}
               maximumValue={1}
-              value={totalDuration > 0 ? currentTime / totalDuration : 0}
-              onSlidingComplete={onSliderValueChange}
+              value={isSeeking ? seekValue : (totalDuration > 0 ? currentTime / totalDuration : 0)}
+              onSlidingStart={handleSeekStart}
+              onValueChange={handleSeekChange}
+              onSlidingComplete={handleSeekEnd}
               minimumTrackTintColor="#FFFFFF"
               maximumTrackTintColor="rgba(255, 255, 255, 0.3)"
               thumbTintColor="#FFFFFF"
             />
             <View style={styles.timeLabels}>
-              <Text style={styles.timeText}>{formatTime(currentTime)}</Text>
-              <Text style={styles.timeText}>-{formatTime(totalDuration - currentTime)}</Text>
+              <Text style={styles.timeText}>{formatTime(isSeeking ? seekValue * totalDuration : currentTime)}</Text>
+              <Text style={styles.timeText}>-{formatTime(totalDuration - (isSeeking ? seekValue * totalDuration : currentTime))}</Text>
             </View>
           </View>
 
@@ -232,12 +266,16 @@ export const AudioPlayerScreen: React.FC<Props> = ({ navigation, route }) => {
             >
               <Ionicons name="play-skip-back" size={32} color="#FFFFFF" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={togglePlayPause} style={styles.playButton}>
-              <Ionicons 
-                name={isPlaying ? "pause" : "play"} 
-                size={40} 
-                color="#FFFFFF" 
-              />
+            <TouchableOpacity onPress={togglePlayPause} style={styles.playButton} disabled={isLoading}>
+              {isLoading ? (
+                <ActivityIndicator size="large" color="#FFFFFF" />
+              ) : (
+                <Ionicons 
+                  name={isPlaying ? "pause" : "play"} 
+                  size={40} 
+                  color="#FFFFFF" 
+                />
+              )}
             </TouchableOpacity>
             <TouchableOpacity 
               onPress={playNextTrack}

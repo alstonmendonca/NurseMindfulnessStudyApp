@@ -2,7 +2,6 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainStackParamList } from './types';
 import { TabNavigator } from './TabNavigator';
-import { DemographicSurveyScreen } from '../screens/DemographicSurveyScreen';
 import { LoadingScreen } from '../screens/LoadingScreen';
 import { MeditateScreen } from '../screens/MeditateScreen';
 import { MindfulnessScreen } from '../screens/MindfulnessScreen';
@@ -17,7 +16,7 @@ import { theme } from '../constants/theme';
 const Stack = createNativeStackNavigator<MainStackParamList>();
 
 export const MainNavigator = () => {
-  const { demographicSurveyCompleted, isInitializing } = useAuth();
+  const { isInitializing } = useAuth();
 
   return (
     <Stack.Navigator
@@ -35,7 +34,7 @@ export const MainNavigator = () => {
           component={LoadingScreen}
           options={{ headerShown: false }}
         />
-      ) : demographicSurveyCompleted ? (
+      ) : (
         <>
           <Stack.Screen
             name="HomeTabs"
@@ -78,15 +77,6 @@ export const MainNavigator = () => {
             options={{ headerShown: false }}
           />
         </>
-      ) : (
-        <Stack.Screen
-          name="DemographicSurvey"
-          component={DemographicSurveyScreen}
-          options={{ 
-            title: 'Demographic Survey',
-            headerLeft: () => null, // Prevent going back
-          }}
-        />
       )}
     </Stack.Navigator>
   );
