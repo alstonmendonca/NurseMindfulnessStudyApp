@@ -1,0 +1,358 @@
+================================================================================
+DEMOGRAPHIC SURVEY DATABASE LOGIC REFERENCE
+For Use in Pretest Directory Implementation
+================================================================================
+
+This file contains all the logic and data structures needed to implement
+the demographic survey in the pretest. Copy this logic into the pretest app.
+
+================================================================================
+1. DATABASE TABLE STRUCTURE (Supabase)
+================================================================================
+
+Table Name: demographic_surveys
+
+Columns:
+- id (auto-generated)
+- participant_id (integer) - Links to participant number
+- sample_code (text)
+- age_group (text)
+- gender (text)
+- marital_status (text)
+- educational_qualification (text)
+- educational_other (text, nullable)
+- designation (text)
+- income_level (text)
+- years_experience (text)
+- working_unit (text)
+- working_unit_other (text, nullable)
+- work_shift (text)
+- hours_per_day (text)
+- night_shifts_per_month (text)
+- night_shifts_other (text, nullable)
+- place_of_residence (text)
+- residence_other (text, nullable)
+- created_at (timestamp, auto-generated)
+
+================================================================================
+2. QUESTION DEFINITIONS (TypeScript Interface)
+================================================================================
+
+export interface DemographicQuestion {
+  id: string;
+  text: string;
+  type: 'radio' | 'text' | 'other';  // 'other' = radio with optional text input
+  options?: string[];
+  required?: boolean;
+}
+
+export interface DemographicSurveyData {
+  sampleCode: string;
+  ageGroup: string;
+  gender: string;
+  maritalStatus: string;
+  educationalQualification: string;
+  educationalOther?: string;
+  designation: string;
+  incomeLevel: string;
+  yearsExperience: string;
+  workingUnit: string;
+  workingUnitOther?: string;
+  workShift: string;
+  hoursPerDay: string;
+  nightShiftsPerMonth: string;
+  nightShiftsOther?: string;
+  placeOfResidence: string;
+  residenceOther?: string;
+}
+
+================================================================================
+3. ALL QUESTIONS DATA
+================================================================================
+
+export const DEMOGRAPHIC_QUESTIONS: DemographicQuestion[] = [
+  {
+    id: 'sampleCode',
+    text: 'Sample code No',
+    type: 'text',
+    required: true,
+  },
+  {
+    id: 'ageGroup',
+    text: 'Age group:',
+    type: 'radio',
+    options: [
+      'Less than 20 years',
+      '20-30 years',
+      '31-35 years',
+      'Above 35 years'
+    ],
+    required: true,
+  },
+  {
+    id: 'gender',
+    text: 'Gender:',
+    type: 'radio',
+    options: ['Male', 'Female'],
+    required: true,
+  },
+  {
+    id: 'maritalStatus',
+    text: 'Marital status:',
+    type: 'radio',
+    options: [
+      'Unmarried/Single',
+      'Married',
+      'Widower/Separated/divorced'
+    ],
+    required: true,
+  },
+  {
+    id: 'educationalQualification',
+    text: 'Educational qualification:',
+    type: 'other',
+    options: [
+      'Certificate course',
+      'Diploma',
+      'Graduate',
+      'Post Graduate',
+      'Others'
+    ],
+    required: true,
+  },
+  {
+    id: 'designation',
+    text: 'Designation:',
+    type: 'radio',
+    options: [
+      'Ward In-charge',
+      'Staff Nurse',
+      'Nurse in probation',
+      'ANS'
+    ],
+    required: true,
+  },
+  {
+    id: 'incomeLevel',
+    text: 'Income level:',
+    type: 'radio',
+    options: [
+      'Below Rs. 10,000',
+      'Rs.10,001-Rs.20,000',
+      'Rs.20,001-Rs.30,000',
+      'Above Rs.30,000'
+    ],
+    required: true,
+  },
+  {
+    id: 'yearsExperience',
+    text: 'Year of experience:',
+    type: 'radio',
+    options: [
+      'Less than 5 years',
+      '5 – 10 years',
+      '10 - 15 years',
+      'Above 15 years'
+    ],
+    required: true,
+  },
+  {
+    id: 'workingUnit',
+    text: 'Working Unit:',
+    type: 'other',
+    options: [
+      'Medical ward',
+      'Surgical ward',
+      'Obstetrics & Gynecology',
+      'Pediatrics',
+      'Geriatric',
+      'Psychiatric',
+      'OT',
+      'Intensive care Units',
+      'Post-operative units',
+      'Any other'
+    ],
+    required: true,
+  },
+  {
+    id: 'workShift',
+    text: 'Work shift:',
+    type: 'radio',
+    options: [
+      'Fixed/Morning',
+      'Rotating'
+    ],
+    required: true,
+  },
+  {
+    id: 'hoursPerDay',
+    text: 'Hours worked per day:',
+    type: 'radio',
+    options: [
+      '8 hours',
+      '> 8 hours'
+    ],
+    required: true,
+  },
+  {
+    id: 'nightShiftsPerMonth',
+    text: 'No. of night shifts per month:',
+    type: 'other',
+    options: [
+      'Weekly Once',
+      '2 weeks once',
+      'Monthly Once',
+      'Others'
+    ],
+    required: true,
+  },
+  {
+    id: 'placeOfResidence',
+    text: 'Place of Residence:',
+    type: 'other',
+    options: [
+      'Hostel in the Hospital Campus',
+      'Hostel in Outside Hospital Campus',
+      'Home',
+      'PG Hostel',
+      'Any other'
+    ],
+    required: true,
+  },
+];
+
+================================================================================
+4. DATABASE SUBMISSION LOGIC
+================================================================================
+
+// Function to submit demographic survey to Supabase
+const handleSubmit = async (
+  participantNumber: number,
+  responses: DemographicSurveyData,
+  otherResponses: Record<string, string>
+) => {
+  try {
+    // First check if survey already exists for this participant
+    const { data: existingSurvey, error: checkError } = await supabase
+      .from('demographic_surveys')
+      .select('id')
+      .eq('participant_id', participantNumber)
+      .single();
+
+    if (!checkError && existingSurvey) {
+      // Survey already exists - handle accordingly
+      console.log('Survey already exists for this participant');
+      return { success: false, error: 'Survey already exists' };
+    }
+
+    // Prepare data for submission - map camelCase to snake_case
+    const surveyData = {
+      participant_id: participantNumber,
+      sample_code: responses.sampleCode,
+      age_group: responses.ageGroup,
+      gender: responses.gender,
+      marital_status: responses.maritalStatus,
+      educational_qualification: responses.educationalQualification,
+      educational_other: otherResponses.educationalQualificationOther || null,
+      designation: responses.designation,
+      income_level: responses.incomeLevel,
+      years_experience: responses.yearsExperience,
+      working_unit: responses.workingUnit,
+      working_unit_other: otherResponses.workingUnitOther || null,
+      work_shift: responses.workShift,
+      hours_per_day: responses.hoursPerDay,
+      night_shifts_per_month: responses.nightShiftsPerMonth,
+      night_shifts_other: otherResponses.nightShiftsPerMonthOther || null,
+      place_of_residence: responses.placeOfResidence,
+      residence_other: otherResponses.placeOfResidenceOther || null,
+    };
+
+    // Submit to database
+    const { error: surveyError } = await supabase
+      .from('demographic_surveys')
+      .insert(surveyData);
+
+    if (surveyError) {
+      console.error('Error saving survey:', surveyError);
+      return { success: false, error: surveyError.message };
+    }
+
+    // Optionally update participant record to mark survey as completed
+    const { error: updateError } = await supabase
+      .from('participants')
+      .update({ demographic_survey_completed: true })
+      .eq('participant_number', participantNumber);
+
+    if (updateError) {
+      console.error('Error updating participant:', updateError);
+    }
+
+    return { success: true };
+
+  } catch (error) {
+    console.error('Error in handleSubmit:', error);
+    return { success: false, error: String(error) };
+  }
+};
+
+================================================================================
+5. VALIDATION LOGIC
+================================================================================
+
+// Check if all required questions are answered
+const isComplete = (responses: Partial<DemographicSurveyData>, otherResponses: Record<string, string>): boolean => {
+  return DEMOGRAPHIC_QUESTIONS.filter(q => q.required).every(question => {
+    const value = responses[question.id as keyof DemographicSurveyData];
+    if (!value) return false;
+
+    // Check if "other" option is selected but no text provided
+    const isOtherOption = value.toLowerCase().includes('other') || value.toLowerCase().includes('any other');
+    if (isOtherOption && question.type === 'other') {
+      const otherValue = otherResponses[`${question.id}Other`];
+      return otherValue && otherValue.trim().length > 0;
+    }
+
+    return true;
+  });
+};
+
+================================================================================
+6. NON-SHARING PLEDGE (Optional - Include in Pretest)
+================================================================================
+
+Pledge Text:
+"I agree that I will not share the mobile app access and login details with 
+colleagues from other wards or study groups. I understand that sharing 
+intervention details may affect the reliability of the study findings."
+
+- User must accept this pledge before survey submission
+- Add a checkbox with label: "I agree to the Non-Sharing Pledge"
+
+================================================================================
+7. SUPABASE CONNECTION (Copy from main app)
+================================================================================
+
+// utils/supabase.ts
+import { createClient } from '@supabase/supabase-js';
+
+const SUPABASE_URL = 'https://spytpzjvechwydrekrgj.supabase.co';
+const SUPABASE_ANON_KEY = 'your-anon-key-here'; // Get from eas.json
+
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+================================================================================
+8. UI COMPONENT REFERENCE (DemographicQuestion)
+================================================================================
+
+The DemographicQuestionComponent renders:
+- 'text' type: TextInput field
+- 'radio' type: List of radio button options
+- 'other' type: Radio buttons + conditional TextInput when "other" is selected
+
+Props:
+- question: DemographicQuestion
+- value: string (current selected value)
+- otherValue: string (text for "other" option)
+- onChange: (value: string, otherValue?: string) => void
+
+================================================================================

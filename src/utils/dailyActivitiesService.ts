@@ -69,29 +69,8 @@ export class DailyActivitiesService {
 
       const activitiesStr = await AsyncStorage.getItem(ACTIVITIES_KEY);
       if (!activitiesStr) {
-        // Initialize with default activities if none exist
-        const defaultActivities: DailyActivity[] = [
-          {
-            id: `default-1-${Date.now()}`,
-            text: 'Take 3 slow breaths',
-            completed: false,
-            createdAt: new Date().toISOString(),
-          },
-          {
-            id: `default-2-${Date.now()}`,
-            text: 'Drink a glass of water',
-            completed: false,
-            createdAt: new Date().toISOString(),
-          },
-          {
-            id: `default-3-${Date.now()}`,
-            text: 'Stretch for 2 minutes',
-            completed: false,
-            createdAt: new Date().toISOString(),
-          },
-        ];
-        await AsyncStorage.setItem(ACTIVITIES_KEY, JSON.stringify(defaultActivities));
-        return defaultActivities;
+        // Return empty array - let each user create their own activities
+        return [];
       }
       return JSON.parse(activitiesStr);
     } catch (error) {

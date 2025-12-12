@@ -1,5 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TabParamList } from './types';
 import { HomeScreen } from '../screens/HomeScreen';
 import { CoursesScreen } from '../screens/CoursesScreen';
@@ -10,6 +12,11 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 const Tab = createBottomTabNavigator<TabParamList>();
 
 export const TabNavigator = () => {
+  const insets = useSafeAreaInsets();
+  const isAndroid = Platform.OS === 'android';
+  const bottomInset = Math.max(insets.bottom, isAndroid ? 16 : 24);
+  const tabBarHeight = (isAndroid ? 60 : 70) + bottomInset;
+
   return (
     <Tab.Navigator
       id={undefined}
@@ -18,8 +25,8 @@ export const TabNavigator = () => {
           backgroundColor: '#050726', // Main background
           borderTopWidth: 0,
           elevation: 0,
-          height: 90,
-          paddingBottom: 30,
+          height: tabBarHeight,
+          paddingBottom: bottomInset,
           paddingTop: 10,
         },
         tabBarActiveTintColor: '#ffffff',
@@ -29,6 +36,7 @@ export const TabNavigator = () => {
           fontFamily: theme.typography.fontFamily.medium,
           marginTop: 4,
         },
+        tabBarSafeAreaInsets: { bottom: bottomInset },
         headerShown: false,
       }}
     >

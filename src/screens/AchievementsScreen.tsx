@@ -123,7 +123,7 @@ export const AchievementsScreen: React.FC<Props> = ({ navigation }) => {
               Time updates every time you open the app
             </Text>
             <View style={styles.iconContainer}>
-              <Ionicons name="man" size={24} color="#8b7355" />
+              <Ionicons name="man" size={24} color="#E5E7EC" />
             </View>
           </View>
           
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   statsCard: {
-    backgroundColor: '#c4c4c4',
+    backgroundColor: 'rgba(16, 19, 64, 0.6)',
     borderRadius: 24,
     padding: 20,
     marginBottom: 24,
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
   },
   statsHeaderText: {
     fontSize: 14,
-    color: '#fff',
+    color: '#E5E7EC',
     flex: 1,
     marginRight: 12,
     lineHeight: 20,
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -218,12 +218,12 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 32,
     fontWeight: '700',
-    color: '#8b7355',
+    color: '#E5E7EC',
     fontFamily: theme.typography.fontFamily.bold,
   },
   statLabel: {
     fontSize: 14,
-    color: '#6b7280',
+    color: '#9ca3af',
     marginTop: 4,
     fontFamily: theme.typography.fontFamily.regular,
   },
