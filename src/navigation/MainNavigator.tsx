@@ -20,7 +20,6 @@ export const MainNavigator = () => {
 
   return (
     <Stack.Navigator
-      id={undefined}
       screenOptions={{
         headerStyle: { backgroundColor: theme.colors.background },
         headerShadowVisible: true,

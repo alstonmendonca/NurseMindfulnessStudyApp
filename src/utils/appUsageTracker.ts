@@ -35,6 +35,7 @@ interface PersistedSession {
   sessionId: number;
   sessionStart: string;
   participantNumber: number;
+  lastActiveTime?: string; // NEW: Track last known active time
 }
 
 class AppUsageTracker {
@@ -85,6 +86,16 @@ class AppUsageTracker {
     try {
       this.participantNumber = participantNumber;
       this.currentAppState = AppState.currentState;
+      
+      // Initialize audio state
+      // We can't use checkAudioPlayback() here because it checks isInitialized
+      // So we read directly from storage
+      try {
+        const audioState = await AsyncStorage.getItem(AUDIO_PLAYBACK_KEY);
+        this.isAudioPlaying = audioState === 'true';
+      } catch (e) {
+        this.isAudioPlaying = false;
+      }
       
       // Initialize network monitoring
       await this.initializeNetworkMonitoring();
@@ -170,6 +181,7 @@ class AppUsageTracker {
         sessionId: this.currentSessionId,
         sessionStart: this.sessionStartTime.toISOString(),
         participantNumber: this.participantNumber,
+        lastActiveTime: new Date().toISOString(), // Update last active time
       };
       await AsyncStorage.setItem(ACTIVE_SESSION_KEY, JSON.stringify(sessionData));
     } catch (error) {
@@ -202,62 +214,55 @@ class AppUsageTracker {
       }
 
       const sessionStart = new Date(persisted.sessionStart);
+      const lastActive = persisted.lastActiveTime ? new Date(persisted.lastActiveTime) : new Date();
       const now = new Date();
-      const sessionAgeMs = now.getTime() - sessionStart.getTime();
-      const sessionAgeHours = sessionAgeMs / (1000 * 60 * 60);
+      
+      // Check how long it's been since the app was last active
+      const timeSinceActiveMs = now.getTime() - lastActive.getTime();
+      const timeSinceActiveMinutes = timeSinceActiveMs / (1000 * 60);
 
-      // If session is older than 4 hours, it's likely stale
-      if (sessionAgeHours > 4) {
-        console.log(`⚠️ Recovered session too old (${sessionAgeHours.toFixed(1)}h) - ending it with estimated duration`);
+      // If less than 5 minutes, restore the session (continuation)
+      if (timeSinceActiveMinutes < 5) {
+        console.log(`🔄 Restoring recent session ${persisted.sessionId} (inactive for ${timeSinceActiveMinutes.toFixed(1)} min)`);
         
-        // End with a reasonable estimate (cap at 10 minutes)
-        const estimatedDurationMinutes = Math.min(10, Math.round(sessionAgeMs / (1000 * 60)));
+        this.currentSessionId = persisted.sessionId;
+        this.sessionStartTime = sessionStart;
         
-        if (this.isOnline) {
-          await supabase
+        // Start periodic duration updates for the restored session
+        this.startDurationUpdateInterval();
+        this.setSessionTimeout();
+        return;
+      }
+
+      // If more than 5 minutes, end the session at the last active time
+      console.log(`⚠️ Session interrupted (inactive for ${timeSinceActiveMinutes.toFixed(1)} min) - ending at last active time`);
+      
+      const durationMs = lastActive.getTime() - sessionStart.getTime();
+      const durationMinutes = Math.max(1, Math.round(durationMs / (1000 * 60)));
+      
+      if (this.isOnline) {
+        // Check if already ended first
+        const { data } = await supabase
+          .from('app_usage_sessions')
+          .select('session_end')
+          .eq('id', persisted.sessionId)
+          .single();
+          
+        if (data && !data.session_end) {
+             await supabase
             .from('app_usage_sessions')
             .update({
-              session_end: now.toISOString(),
-              duration_minutes: estimatedDurationMinutes,
+              session_end: lastActive.toISOString(),
+              duration_minutes: durationMinutes,
             })
             .eq('id', persisted.sessionId);
-        } else {
-          await this.queueOfflineSessionEnd(persisted.sessionId, now.toISOString(), estimatedDurationMinutes);
+            console.log(`✅ Closed crashed session ${persisted.sessionId} in DB`);
         }
-        
-        await this.clearPersistedSession();
-        return;
+      } else {
+        await this.queueOfflineSessionEnd(persisted.sessionId, lastActive.toISOString(), durationMinutes);
       }
-
-      // Session is recent - check if it's still open in DB
-      console.log(`🔄 Found recent crashed session (${persisted.sessionId}) - checking database...`);
       
-      const { data, error } = await supabase
-        .from('app_usage_sessions')
-        .select('id, session_end')
-        .eq('id', persisted.sessionId)
-        .single();
-
-      if (error || !data) {
-        console.log('Crashed session not found in database - clearing');
-        await this.clearPersistedSession();
-        return;
-      }
-
-      if (data.session_end) {
-        console.log('Crashed session already ended in database - clearing');
-        await this.clearPersistedSession();
-        return;
-      }
-
-      // Session still open - restore it
-      console.log(`✅ Restoring crashed session ${persisted.sessionId}`);
-      this.currentSessionId = persisted.sessionId;
-      this.sessionStartTime = sessionStart;
-      
-      // Start periodic duration updates for the restored session
-      this.startDurationUpdateInterval();
-      this.setSessionTimeout();
+      await this.clearPersistedSession();
       
     } catch (error) {
       console.error('Error recovering crashed session:', error);
@@ -270,7 +275,14 @@ class AppUsageTracker {
     this.stopDurationUpdateInterval();
     
     this.durationUpdateIntervalId = setInterval(async () => {
-      if (!this.currentSessionId || !this.sessionStartTime || !this.isOnline) {
+      if (!this.currentSessionId || !this.sessionStartTime) {
+        return;
+      }
+
+      // Update local persistence first (heartbeat)
+      await this.persistActiveSession();
+
+      if (!this.isOnline) {
         return;
       }
 
@@ -378,7 +390,7 @@ class AppUsageTracker {
 
   // Clean up sessions that didn't end properly (app was force closed, etc.)
   private async cleanupOrphanedSessions(): Promise<void> {
-    if (!this.participantNumber) return;
+    if (!this.participantNumber || !this.isOnline) return;
 
     try {
       // Find sessions that don't have an end time and are older than 1 hour
@@ -609,6 +621,10 @@ class AppUsageTracker {
 
   // Check if audio is currently playing
   private async checkAudioPlayback(): Promise<boolean> {
+    // Use in-memory flag if initialized, otherwise fallback to storage
+    if (this.isInitialized) {
+        return this.isAudioPlaying;
+    }
     try {
       const audioState = await AsyncStorage.getItem(AUDIO_PLAYBACK_KEY);
       return audioState === 'true';

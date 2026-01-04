@@ -212,6 +212,64 @@ export const coursesContent: Course[] = [
       },
     ],
   },
+  {
+    id: 'course-7',
+    title: 'Building Emotional Resilience',
+    description: 'Strengthen your ability to bounce back from daily challenges',
+    duration: '6 min read',
+    category: 'Personal Growth',
+    thumbnail: 'https://images.unsplash.com/photo-1554244933-d876deb6b2ff?q=80&w=1160&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    lessons: [
+      {
+        title: 'The Muscle of Resilience',
+        content: [
+          'Resilience is not a fixed trait you are born with; it is a muscle that can be strengthened with practice.',
+          'In healthcare, resilience means the ability to witness suffering and high stress without losing your own center or ability to care.',
+          'It involves reframing challenges not as insurmountable threats, but as problems to be solved or situations to be navigated.',
+          'Building resilience requires a combination of self-awareness, emotional regulation, and maintaining a supportive community.',
+        ],
+        exercise: {
+          title: 'The "Three Good Things" Practice',
+          instructions: [
+            'At the end of your shift or before bed, write down three good things that happened today.',
+            'They can be small: a patient smiled, you had a good coffee, a colleague helped you.',
+            'Next to each, write briefly why it happened (e.g., "because I took time to listen").',
+            'Do this for one week.',
+            'Research shows this simple practice significantly increases resilience and lowers depressive symptoms.',
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: 'course-8',
+    title: 'The Art of Disconnecting',
+    description: 'Learn to leave work at work and be fully present at home',
+    duration: '5 min read',
+    category: 'Work-Life Balance',
+    thumbnail: 'https://plus.unsplash.com/premium_photo-1669446008800-9a124b0fd3a2?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    lessons: [
+      {
+        title: 'Transitioning Home',
+        content: [
+          'Carrying the emotional weight of a shift home can erode your personal relationships and prevent true rest.',
+          'Our brains need a clear signal that "work mode" is off and "home mode" is on. Without a ritual, the lines blur.',
+          'Disconnecting is not about not caring; it is about recharging so you can care again tomorrow.',
+          'Creating a physical or mental boundary helps you step out of your professional role and back into your personal self.',
+        ],
+        exercise: {
+          title: 'The Doorway Ritual',
+          instructions: [
+            'Choose a specific doorway (leaving the hospital, or entering your home).',
+            'As you walk through it, pause for one second.',
+            'Imagine a shower of light washing away the stress, decisions, and emotions of the day.',
+            'Take a deep breath and say silently: "I am leaving work here. I am arriving home now."',
+            'Step through and consciously engage with your personal life.',
+          ],
+        },
+      },
+    ],
+  },
 ];
 
 // Meditation Tracks - For Meditate screen (accessed from Home)

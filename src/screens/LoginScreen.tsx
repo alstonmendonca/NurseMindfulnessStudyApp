@@ -8,6 +8,7 @@ import { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../contexts/AuthContext';
 import { BackgroundDoodles } from '../components/BackgroundDoodles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { networkManager } from '../utils/networkManager';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -28,15 +29,32 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
       return;
     }
 
+    // Check for internet connection
+    if (!networkManager.hasInternetConnection()) {
+      Alert.alert(
+        'No Internet Connection',
+        'Please check your internet connection and try again.'
+      );
+      return;
+    }
+
     try {
       await login(participantNumber.trim(), password.trim());
       // If login is successful, navigation will automatically proceed due to 
       // the navigation logic in App.tsx
-    } catch (error) {
-      Alert.alert(
-        'Login Failed',
-        'Please check your participant number and password and try again.'
-      );
+    } catch (error: any) {
+      console.error('Login error:', error);
+      
+      let errorMessage = 'Please check your participant number and password and try again.';
+      
+      // Handle specific error cases
+      if (error.message === 'Invalid credentials') {
+        errorMessage = 'The participant number or password you entered is incorrect.';
+      } else if (error.message && error.message.includes('Network request failed')) {
+        errorMessage = 'Unable to connect to the server. Please check your internet connection.';
+      }
+
+      Alert.alert('Login Failed', errorMessage);
     }
   };
 
@@ -79,7 +97,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
                   <MaterialIcons 
                     name="person-outline" 
                     size={20} 
-                    color={theme.colors.textSecondary} 
+                    color={theme.colors.mutedText} 
                     style={styles.inputIcon}
                   />
                   <TextInput
@@ -87,11 +105,13 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
                     value={participantNumber}
                     onChangeText={setParticipantNumber}
                     placeholder="Enter your participant number"
-                    placeholderTextColor={theme.colors.textSecondary}
+                    placeholderTextColor={theme.colors.mutedText}
                     autoCapitalize="none"
                     autoCorrect={false}
                     keyboardType="number-pad"
                     returnKeyType="next"
+                    accessibilityLabel="Participant Number Input"
+                    accessibilityHint="Enter your assigned participant number"
                   />
                 </View>
               </View>
@@ -102,7 +122,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
                   <MaterialIcons 
                     name="lock-outline" 
                     size={20} 
-                    color={theme.colors.textSecondary} 
+                    color={theme.colors.mutedText} 
                     style={styles.inputIcon}
                   />
                   <TextInput
@@ -110,21 +130,25 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
                     value={password}
                     onChangeText={setPassword}
                     placeholder="Enter your password"
-                    placeholderTextColor={theme.colors.textSecondary}
+                    placeholderTextColor={theme.colors.mutedText}
                     secureTextEntry={!showPassword}
                     autoCapitalize="none"
                     autoCorrect={false}
                     returnKeyType="done"
                     onSubmitEditing={handleLogin}
+                    accessibilityLabel="Password Input"
+                    accessibilityHint="Enter your password"
                   />
                   <TouchableOpacity
                     onPress={() => setShowPassword(!showPassword)}
                     style={styles.eyeButton}
+                    accessibilityLabel={showPassword ? "Hide password" : "Show password"}
+                    accessibilityRole="button"
                   >
                     <MaterialIcons 
                       name={showPassword ? "visibility-off" : "visibility"} 
                       size={20} 
-                      color={theme.colors.textSecondary} 
+                      color={theme.colors.mutedText} 
                     />
                   </TouchableOpacity>
                 </View>
@@ -134,6 +158,9 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
                 style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
                 onPress={handleLogin}
                 disabled={isLoading}
+                accessibilityLabel="Sign In Button"
+                accessibilityRole="button"
+                accessibilityState={{ disabled: isLoading }}
               >
                 <Text style={styles.loginButtonText}>
                   {isLoading ? "Signing In..." : "Sign In"}
@@ -224,14 +251,14 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 16,
     fontFamily: theme.typography.fontFamily.medium,
-    color: '#FFFFFF',
+    color: theme.colors.text,
     marginLeft: theme.spacing.sm,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.primary, // Changed to primary for visibility
     borderRadius: theme.radii.lg,
     backgroundColor: theme.colors.background,
     ...theme.shadows.sm,

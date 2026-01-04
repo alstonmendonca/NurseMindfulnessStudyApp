@@ -19,18 +19,17 @@ export const TabNavigator = () => {
 
   return (
     <Tab.Navigator
-      id={undefined}
       screenOptions={{
         tabBarStyle: {
-          backgroundColor: '#050726', // Main background
+          backgroundColor: theme.colors.background, // Main background
           borderTopWidth: 0,
           elevation: 0,
           height: tabBarHeight,
           paddingBottom: bottomInset,
           paddingTop: 10,
         },
-        tabBarActiveTintColor: '#ffffff',
-        tabBarInactiveTintColor: '#6b7280',
+        tabBarActiveTintColor: theme.colors.text,
+        tabBarInactiveTintColor: theme.colors.mutedText,
         tabBarLabelStyle: {
           fontSize: 12,
           fontFamily: theme.typography.fontFamily.medium,
@@ -38,6 +37,7 @@ export const TabNavigator = () => {
         },
         tabBarSafeAreaInsets: { bottom: bottomInset },
         headerShown: false,
+        tabBarHideOnKeyboard: true,
       }}
     >
       <Tab.Screen
