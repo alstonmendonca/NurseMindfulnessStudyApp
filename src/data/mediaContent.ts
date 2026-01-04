@@ -395,7 +395,7 @@ export const natureSounds: MediaItem[] = [
   {
     id: 'nature-1',
     title: 'Ocean Sounds Version 1',
-    duration: '30 min',
+    duration: '2 min',
     category: 'Nature Sounds',
     thumbnail: 'https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=400',
     url: 'https://drive.google.com/uc?export=view&id=1eiuIUXssfNrLqxF4bjXPoD8nPgEhS1bf',
@@ -404,7 +404,7 @@ export const natureSounds: MediaItem[] = [
   {
     id: 'nature-2',
     title: 'Light Rain Sounds',
-    duration: '30 min',
+    duration: '5 min',
     category: 'Nature Sounds',
     thumbnail: 'https://images.unsplash.com/photo-1428908728789-d2de25dbd4e2?w=400',
     url: 'https://drive.google.com/uc?export=view&id=1aSnZXU2V_ZfNZpMtLdZrwyZdLYZj02u3',
@@ -413,7 +413,7 @@ export const natureSounds: MediaItem[] = [
   {
     id: 'nature-3',
     title: 'Heavy Rain Sounds Version 1',
-    duration: '30 min',
+    duration: '5 min',
     category: 'Nature Sounds',
     thumbnail: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=400',
     url: 'https://drive.google.com/uc?export=view&id=1aYU4sLnpWM0MMSli4dU2oeIKo8JgOdOh',
@@ -422,7 +422,7 @@ export const natureSounds: MediaItem[] = [
   {
     id: 'nature-4',
     title: 'Heavy Rain Sounds Version 2',
-    duration: '30 min',
+    duration: '4 min',
     category: 'Nature Sounds',
     thumbnail: 'https://images.unsplash.com/photo-1605727216801-e27ce1d0cc28?w=400',
     url: 'https://drive.google.com/uc?export=view&id=1md6XBXJ31J9zuYF9HylHkIN07sqQy7P4',
@@ -431,7 +431,7 @@ export const natureSounds: MediaItem[] = [
   {
     id: 'nature-5',
     title: 'Rain + Thunder Sounds',
-    duration: '30 min',
+    duration: '5 min',
     category: 'Nature Sounds',
     thumbnail: 'https://images.unsplash.com/photo-1501706362039-c06b2d715385?w=400',
     url: 'https://drive.google.com/uc?export=view&id=18HqgeTiuBoLF8mMr9MxdQBkdmW_iLMgP',
@@ -440,7 +440,7 @@ export const natureSounds: MediaItem[] = [
   {
     id: 'nature-6',
     title: 'Nature + Rain Sounds',
-    duration: '30 min',
+    duration: '5 min',
     category: 'Nature Sounds',
     thumbnail: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400',
     url: 'https://drive.google.com/uc?export=view&id=1KPdEXVUkQkwzbxieviwANtR-uYE_pNJA',
@@ -453,7 +453,7 @@ export const ambientSounds: MediaItem[] = [
   {
     id: 'ambient-1',
     title: 'Fire Sounds',
-    duration: '60 min',
+    duration: '1 min',
     category: 'Ambient Sounds',
     thumbnail: 'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?w=400',
     url: 'https://drive.google.com/uc?export=view&id=1lZrazuSfSLddfvbNAmccbHni4GkJUsmj',
@@ -462,7 +462,7 @@ export const ambientSounds: MediaItem[] = [
   {
     id: 'ambient-2',
     title: 'Brown Noise Version 1',
-    duration: '60 min',
+    duration: '10 min',
     category: 'Ambient Sounds',
     thumbnail: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=400',
     url: 'https://drive.google.com/uc?export=view&id=1ihAWYMsPJtNdLM4xwlXlb4uUFPUdd0ON',
@@ -471,7 +471,7 @@ export const ambientSounds: MediaItem[] = [
   {
     id: 'ambient-3',
     title: 'Brown Noise Version 2',
-    duration: '60 min',
+    duration: '5 min',
     category: 'Ambient Sounds',
     thumbnail: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=400',
     url: 'https://drive.google.com/uc?export=view&id=1Zy170rZyvhvHJryYEIMRx7igOhRLhE23',
@@ -480,7 +480,7 @@ export const ambientSounds: MediaItem[] = [
   {
     id: 'ambient-4',
     title: 'Brown Noise Version 3',
-    duration: '60 min',
+    duration: '5 min',
     category: 'Ambient Sounds',
     thumbnail: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=400',
     url: 'https://drive.google.com/uc?export=view&id=1xRTdhu3KDZpOaDhQOZG5JfEeZFaFXfCV',
@@ -489,7 +489,7 @@ export const ambientSounds: MediaItem[] = [
   {
     id: 'ambient-5',
     title: 'Brown Noise Version 4',
-    duration: '60 min',
+    duration: '1 min',
     category: 'Ambient Sounds',
     thumbnail: 'https://images.unsplash.com/photo-1614850523296-7c2f414c2355?w=400',
     url: 'https://drive.google.com/uc?export=view&id=1SpjLNGr8mW7XsXQ_Uv4i0BHeTdfPh0cU',
