@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAudioPlayer, AudioSource, setAudioModeAsync } from 'expo-audio';
 import Slider from '@react-native-community/slider';
 import { appUsageTracker } from '../utils/appUsageTracker';
+import { mediaCache } from '../utils/mediaCache';
 
 type Props = NativeStackScreenProps<MainStackParamList, 'AudioPlayer'>;
 
@@ -32,13 +33,41 @@ export const AudioPlayerScreen: React.FC<Props> = ({ navigation, route }) => {
   const [currentThumbnail, setCurrentThumbnail] = useState(thumbnail);
   const [currentTitle, setCurrentTitle] = useState(title);
   const [currentUrl, setCurrentUrl] = useState(audioUrl);
+  const [resolvedUrl, setResolvedUrl] = useState<string>(audioUrl);
   const [isSeeking, setIsSeeking] = useState(false);
   const [seekValue, setSeekValue] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [volume, setVolume] = useState(1.0);
+  const [isLooping, setIsLooping] = useState(false);
   
-  const player = useAudioPlayer(currentUrl);
+  const player = useAudioPlayer(resolvedUrl);
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
   const positionUpdateInterval = useRef<NodeJS.Timeout | null>(null);
+
+  // Resolve URL from cache or use remote URL
+  useEffect(() => {
+    const resolveUrl = async () => {
+      setIsLoading(true);
+      const { url } = await mediaCache.getMediaUrl(currentUrl);
+      setResolvedUrl(url);
+    };
+    resolveUrl();
+  }, [currentUrl]);
+
+  // Set volume and loop on player initialization and when they change
+  useEffect(() => {
+    if (player) {
+      player.volume = volume;
+      player.loop = isLooping;
+    }
+  }, [player, volume, isLooping]);
+
+  const handleVolumeChange = (value: number) => {
+    setVolume(value);
+    if (player) {
+      player.volume = value;
+    }
+  };
 
   useEffect(() => {
     // Configure audio mode for playback
@@ -58,7 +87,7 @@ export const AudioPlayerScreen: React.FC<Props> = ({ navigation, route }) => {
   }, []);
 
   useEffect(() => {
-    // Reset state when URL changes
+    // Reset state when resolved URL changes
     setIsLoading(true);
     setCurrentTime(0);
     setSeekValue(0);
@@ -103,7 +132,7 @@ export const AudioPlayerScreen: React.FC<Props> = ({ navigation, route }) => {
       appUsageTracker.setAudioPlaybackState(false);
       subscription.remove();
     };
-  }, [currentUrl]);
+  }, [resolvedUrl]);
 
   // Track playback state changes for app usage tracker and update duration
   useEffect(() => {
@@ -254,11 +283,28 @@ export const AudioPlayerScreen: React.FC<Props> = ({ navigation, route }) => {
             </View>
           </View>
 
+          {/* Volume Control */}
+          <View style={styles.volumeContainer}>
+            <Ionicons 
+              name={volume === 0 ? "volume-mute" : volume < 0.5 ? "volume-low" : "volume-high"} 
+              size={20} 
+              color="rgba(255, 255, 255, 0.7)" 
+            />
+            <Slider
+              style={styles.volumeSlider}
+              minimumValue={0}
+              maximumValue={1}
+              value={volume}
+              onValueChange={handleVolumeChange}
+              minimumTrackTintColor="rgba(255, 255, 255, 0.8)"
+              maximumTrackTintColor="rgba(255, 255, 255, 0.3)"
+              thumbTintColor="#FFFFFF"
+            />
+            <Ionicons name="volume-high" size={20} color="rgba(255, 255, 255, 0.7)" />
+          </View>
+
           {/* Controls */}
           <View style={styles.controls}>
-            <TouchableOpacity>
-              <Ionicons name="musical-notes-outline" size={28} color="rgba(255, 255, 255, 0.7)" />
-            </TouchableOpacity>
             <TouchableOpacity 
               onPress={playPreviousTrack}
               disabled={!playlist || activeTrackIndex <= 0}
@@ -284,8 +330,12 @@ export const AudioPlayerScreen: React.FC<Props> = ({ navigation, route }) => {
             >
               <Ionicons name="play-skip-forward" size={32} color="#FFFFFF" />
             </TouchableOpacity>
-            <TouchableOpacity>
-              <Ionicons name="repeat-outline" size={28} color="rgba(255, 255, 255, 0.7)" />
+            <TouchableOpacity onPress={() => setIsLooping(!isLooping)}>
+              <Ionicons 
+                name={isLooping ? "repeat" : "repeat-outline"} 
+                size={28} 
+                color={isLooping ? "#FFFFFF" : "rgba(255, 255, 255, 0.7)"} 
+              />
             </TouchableOpacity>
           </View>
 
@@ -379,7 +429,7 @@ const styles = StyleSheet.create({
   },
   progressContainer: {
     width: '100%',
-    marginBottom: 32,
+    marginBottom: 16,
   },
   slider: {
     width: '100%',
@@ -393,6 +443,18 @@ const styles = StyleSheet.create({
   timeText: {
     fontSize: 12,
     color: 'rgba(255, 255, 255, 0.7)',
+  },
+  volumeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 8,
+    marginBottom: 24,
+  },
+  volumeSlider: {
+    flex: 1,
+    height: 40,
+    marginHorizontal: 8,
   },
   controls: {
     flexDirection: 'row',

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, Alert, KeyboardAvoidingView, Platform, Dimensions, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, TextInput, Alert, KeyboardAvoidingView, Platform, TouchableOpacity, ScrollView, useWindowDimensions } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../constants/theme';
 import { Screen } from '../components/Screen';
@@ -7,8 +7,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../contexts/AuthContext';
 import { BackgroundDoodles } from '../components/BackgroundDoodles';
-
-const { width, height } = Dimensions.get('window');
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -17,6 +16,11 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [participantNumber, setParticipantNumber] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const insets = useSafeAreaInsets();
+  const { height: screenHeight } = useWindowDimensions();
+  
+  // Determine if it's a small screen (less than 700px height)
+  const isSmallScreen = screenHeight < 700;
 
   const handleLogin = async () => {
     if (!participantNumber.trim() || !password.trim()) {
@@ -45,16 +49,22 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
         <ScrollView 
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { 
+              paddingTop: insets.top + (isSmallScreen ? 10 : 20),
+              paddingBottom: insets.bottom + 20,
+            }
+          ]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
           {/* Header Section */}
-          <View style={styles.header}>
-            <View style={styles.iconContainer}>
-              <MaterialIcons name="self-improvement" size={64} color={theme.colors.primary} />
+          <View style={[styles.header, isSmallScreen && styles.headerSmall]}>
+            <View style={[styles.iconContainer, isSmallScreen && styles.iconContainerSmall]}>
+              <MaterialIcons name="self-improvement" size={isSmallScreen ? 48 : 64} color={theme.colors.primary} />
             </View>
-            <Text style={styles.title}>Welcome to Shanthi</Text>
+            <Text style={[styles.title, isSmallScreen && styles.titleSmall]}>Welcome to Shanthi</Text>
             <Text style={styles.subtitle}>
               Your mindfulness companion for peace and well-being
             </Text>
@@ -142,8 +152,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-    paddingTop: 20,
-    paddingBottom: 20,
   },
   keyboardAvoid: {
     flex: 1,
@@ -151,15 +159,19 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: theme.spacing.xl,
-    paddingBottom: theme.spacing.xl,
+    justifyContent: 'center',
   },
   header: {
     alignItems: 'center',
-    paddingTop: theme.spacing.xxxl + 20,
-    paddingBottom: theme.spacing.xl,
+    paddingTop: theme.spacing.xl,
+    paddingBottom: theme.spacing.lg,
+  },
+  headerSmall: {
+    paddingTop: theme.spacing.md,
+    paddingBottom: theme.spacing.md,
   },
   iconContainer: {
-    marginBottom: theme.spacing.xl,
+    marginBottom: theme.spacing.lg,
     width: 100,
     height: 100,
     borderRadius: 50,
@@ -168,6 +180,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     ...theme.shadows.md,
   },
+  iconContainerSmall: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginBottom: theme.spacing.md,
+  },
   title: {
     fontSize: 32,
     fontFamily: theme.typography.fontFamily.bold,
@@ -175,6 +193,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: theme.spacing.md,
     letterSpacing: -0.5,
+  },
+  titleSmall: {
+    fontSize: 26,
+    marginBottom: theme.spacing.sm,
   },
   subtitle: {
     fontSize: 16,
@@ -185,8 +207,7 @@ const styles = StyleSheet.create({
     maxWidth: 280,
   },
   formContainer: {
-    paddingVertical: theme.spacing.xl,
-    minHeight: 320, // Ensure minimum height for form
+    paddingVertical: theme.spacing.md,
   },
   form: {
     backgroundColor: theme.colors.surface,

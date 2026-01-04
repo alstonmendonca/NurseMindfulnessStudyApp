@@ -6,12 +6,13 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAuth } from './src/contexts/AuthContext';
 import * as Notifications from 'expo-notifications';
+import * as Updates from 'expo-updates';
 import { RootStackParamList } from './src/navigation/types';
 import { MainNavigator } from './src/navigation/MainNavigator';
 import { ParticipantProvider } from './src/contexts/ParticipantContext';
 import { AuthProvider } from './src/contexts/AuthContext';
 import { useFonts } from './src/hooks/useFonts';
-import { View, Text, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator, Alert } from 'react-native';
 import { theme } from './src/constants/theme';
 import { WiFiRequiredScreen } from './src/components/WiFiRequiredScreen';
 import { networkManager } from './src/utils/networkManager';
@@ -28,8 +29,41 @@ Notifications.setNotificationHandler({
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+// Check for OTA updates on app launch
+async function checkForUpdates() {
+  if (__DEV__) {
+    console.log('Skipping update check in development mode');
+    return;
+  }
+
+  try {
+    const update = await Updates.checkForUpdateAsync();
+    if (update.isAvailable) {
+      console.log('🔄 Update available, downloading...');
+      await Updates.fetchUpdateAsync();
+      console.log('✅ Update downloaded, reloading app...');
+      await Updates.reloadAsync();
+    } else {
+      console.log('✅ App is up to date');
+    }
+  } catch (error) {
+    console.log('Error checking for updates:', error);
+    // Don't show error to user - just continue with current version
+  }
+}
+
 export default function App() {
   const fontsLoaded = useFonts();
+  const [isCheckingForUpdates, setIsCheckingForUpdates] = useState(true);
+
+  // Check for updates on app launch
+  useEffect(() => {
+    const checkUpdates = async () => {
+      await checkForUpdates();
+      setIsCheckingForUpdates(false);
+    };
+    checkUpdates();
+  }, []);
 
   // Set up notification handlers
   useEffect(() => {
@@ -48,13 +82,13 @@ export default function App() {
     };
   }, []);
 
-  // Show loading screen while fonts are loading
-  if (!fontsLoaded) {
+  // Show loading screen while fonts are loading or checking for updates
+  if (!fontsLoaded || isCheckingForUpdates) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
         <ActivityIndicator size="large" color={theme.colors.text} />
         <Text style={{ marginTop: 16, fontFamily: theme.typography.fontFamily.regular, color: theme.colors.text }}>
-          Loading...
+          {isCheckingForUpdates ? 'Checking for updates...' : 'Loading...'}
         </Text>
       </View>
     );

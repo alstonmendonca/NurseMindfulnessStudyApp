@@ -18,6 +18,7 @@ import Slider from '@react-native-community/slider';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useKeepAwake } from 'expo-keep-awake';
 import { appUsageTracker } from '../utils/appUsageTracker';
+import { mediaCache } from '../utils/mediaCache';
 
 type Props = NativeStackScreenProps<MainStackParamList, 'VideoPlayer'>;
 
@@ -30,8 +31,19 @@ export const VideoPlayerScreen: React.FC<Props> = ({ navigation, route }) => {
   
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [resolvedUrl, setResolvedUrl] = useState<string>(videoUrl);
   
-  const player = useVideoPlayer(videoUrl, (player) => {
+  // Resolve URL from cache or use remote URL
+  useEffect(() => {
+    const resolveUrl = async () => {
+      setIsLoading(true);
+      const { url } = await mediaCache.getMediaUrl(videoUrl);
+      setResolvedUrl(url);
+    };
+    resolveUrl();
+  }, [videoUrl]);
+  
+  const player = useVideoPlayer(resolvedUrl, (player) => {
     player.loop = false;
     player.play();
   });
