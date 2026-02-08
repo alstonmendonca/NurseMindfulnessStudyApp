@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { Department, StudyGroup } from '../types';
 import { supabase } from '../utils/supabase';
 import { useAuth } from './AuthContext';
@@ -57,7 +57,7 @@ export const ParticipantProvider = ({ children }: { children: React.ReactNode })
     }
   };
 
-  const setParticipantData = async (data: { department: Department }) => {
+  const setParticipantData = useCallback(async (data: { department: Department }) => {
     try {
       if (!participantNumber) return;
       
@@ -76,18 +76,18 @@ export const ParticipantProvider = ({ children }: { children: React.ReactNode })
       console.error('Error updating participant data:', error);
       throw error;
     }
-  };
+  }, [participantNumber]);
+
+  const contextValue = useMemo(() => ({
+    participantNumber,
+    studyGroup,
+    department,
+    isLoading,
+    setParticipantData,
+  }), [participantNumber, studyGroup, department, isLoading, setParticipantData]);
 
   return (
-    <ParticipantContext.Provider
-      value={{
-        participantNumber,
-        studyGroup,
-        department,
-        isLoading,
-        setParticipantData,
-      }}
-    >
+    <ParticipantContext.Provider value={contextValue}>
       {children}
     </ParticipantContext.Provider>
   );

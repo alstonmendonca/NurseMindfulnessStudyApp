@@ -9,6 +9,7 @@ export interface ConnectivityState {
 
 class NetworkManager {
   private netInfoSubscription: NetInfoSubscription | null = null;
+  private isInitialized: boolean = false;
   private currentState: ConnectivityState = {
     isConnected: false,
     isWiFi: false,
@@ -16,8 +17,13 @@ class NetworkManager {
   };
   private connectivityListeners: ((state: ConnectivityState) => void)[] = [];
 
-  // Initialize network monitoring
+  // Initialize network monitoring (idempotent — safe to call multiple times)
   async initialize(): Promise<ConnectivityState> {
+    // If already initialized, just return current state
+    if (this.isInitialized) {
+      return this.currentState;
+    }
+
     // Get initial state
     const state = await NetInfo.fetch();
     this.updateConnectivityState(state);
@@ -25,6 +31,7 @@ class NetworkManager {
     // Start listening for changes
     this.netInfoSubscription = NetInfo.addEventListener(this.handleConnectivityChange);
 
+    this.isInitialized = true;
     return this.currentState;
   }
 
@@ -35,6 +42,7 @@ class NetworkManager {
       this.netInfoSubscription = null;
     }
     this.connectivityListeners = [];
+    this.isInitialized = false;
   }
 
   // Handle connectivity changes

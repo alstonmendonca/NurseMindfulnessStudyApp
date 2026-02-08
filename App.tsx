@@ -15,6 +15,7 @@ import { useFonts } from './src/hooks/useFonts';
 import { View, Text, ActivityIndicator, Alert } from 'react-native';
 import { theme } from './src/constants/theme';
 import { WiFiRequiredScreen } from './src/components/WiFiRequiredScreen';
+import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { networkManager } from './src/utils/networkManager';
 
 // Configure notifications
@@ -95,26 +96,28 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <AuthProvider>
-        <ParticipantProvider>
-          <NavigationContainer theme={{
-            ...DefaultTheme,
-            colors: {
-              ...DefaultTheme.colors,
-              background: theme.colors.background,
-              text: theme.colors.text,
-              border: theme.colors.border,
-              primary: theme.colors.text,
-              card: theme.colors.background,
-            },
-          }}>
-            <AppNavigator />
-            <StatusBar style="light" />
-          </NavigationContainer>
-        </ParticipantProvider>
-      </AuthProvider>
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <AuthProvider>
+          <ParticipantProvider>
+            <NavigationContainer theme={{
+              ...DefaultTheme,
+              colors: {
+                ...DefaultTheme.colors,
+                background: theme.colors.background,
+                text: theme.colors.text,
+                border: theme.colors.border,
+                primary: theme.colors.text,
+                card: theme.colors.background,
+              },
+            }}>
+              <AppNavigator />
+              <StatusBar style="light" />
+            </NavigationContainer>
+          </ParticipantProvider>
+        </AuthProvider>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }
 
@@ -125,7 +128,8 @@ function AppNavigator() {
   const [isCheckingConnection, setIsCheckingConnection] = useState<boolean>(true);
 
   useEffect(() => {
-    // Initialize network monitoring
+    let networkChangeHandler: ((state: any) => void) | null = null;
+
     const initializeNetwork = async () => {
       try {
         await networkManager.initialize();
@@ -134,15 +138,11 @@ function AppNavigator() {
         setIsCheckingConnection(false);
 
         // Listen for network changes
-        const handleNetworkChange = (state: any) => {
+        networkChangeHandler = (state: any) => {
           setIsInternetConnected(networkManager.hasInternetConnection());
         };
 
-        networkManager.addConnectivityListener(handleNetworkChange);
-        
-        return () => {
-          networkManager.removeConnectivityListener(handleNetworkChange);
-        };
+        networkManager.addConnectivityListener(networkChangeHandler);
       } catch (error) {
         console.error('Error initializing network monitoring:', error);
         setIsCheckingConnection(false);
@@ -150,6 +150,12 @@ function AppNavigator() {
     };
 
     initializeNetwork();
+
+    return () => {
+      if (networkChangeHandler) {
+        networkManager.removeConnectivityListener(networkChangeHandler);
+      }
+    };
   }, []);
 
   // Show loading while checking internet connection status

@@ -90,9 +90,18 @@ class MediaCacheService {
       hash = hash & hash; // Convert to 32-bit integer
     }
     
-    // Extract file extension from URL
+    // Extract file extension from the URL path (not query params)
     const urlPath = url.split('?')[0]; // Remove query params
-    const extension = urlPath.split('.').pop()?.toLowerCase() || 'mp3';
+    const lastSegment = urlPath.split('/').pop() || ''; // Get filename part only
+    const dotParts = lastSegment.split('.');
+    // Only use extension if it looks like a valid media extension (2-4 chars, no slashes)
+    let extension = 'mp3';
+    if (dotParts.length > 1) {
+      const ext = dotParts.pop()?.toLowerCase() || '';
+      if (/^[a-z0-9]{2,4}$/.test(ext)) {
+        extension = ext;
+      }
+    }
     
     return `media_${Math.abs(hash)}.${extension}`;
   }
@@ -136,85 +145,83 @@ class MediaCacheService {
     return null;
   }
 
-  // Get media URL - returns cached path if available, otherwise returns original URL and starts download
-  async getMediaUrl(remoteUrl: string): Promise<{ url: string; isLocal: boolean }> {
+  // Download media file and return local path. All media must be downloaded before playing.
+  // Returns cached path instantly if already downloaded, otherwise downloads with progress.
+  async getMediaUrl(
+    remoteUrl: string,
+    onProgress?: (progress: number) => void
+  ): Promise<{ url: string; isLocal: boolean }> {
     await this.initialize();
 
     // Check if already cached
     const cachedPath = await this.getCachedPath(remoteUrl);
     if (cachedPath) {
+      onProgress?.(1);
       return { url: cachedPath, isLocal: true };
     }
 
-    // Start background download (don't wait)
-    this.downloadInBackground(remoteUrl);
-
-    // Return remote URL for streaming
-    return { url: remoteUrl, isLocal: false };
-  }
-
-  // Download file in background
-  private async downloadInBackground(url: string): Promise<void> {
-    const key = this.getCacheKey(url);
-    
-    // Don't start duplicate downloads
-    if (this.downloadQueue.has(key)) {
-      return;
-    }
-
-    const downloadPromise = this.downloadFile(url);
-    this.downloadQueue.set(key, downloadPromise);
-
-    try {
-      await downloadPromise;
-    } finally {
-      this.downloadQueue.delete(key);
-    }
-  }
-
-  // Download and cache a file
-  async downloadFile(url: string): Promise<string | null> {
-    await this.initialize();
-    const key = this.getCacheKey(url);
+    // Download the file (blocking) with progress tracking
+    const key = this.getCacheKey(remoteUrl);
     const localPath = `${CACHE_DIRECTORY}${key}`;
 
-    // Check if already downloading or cached
-    if (this.cacheIndex[key]) {
-      const existing = await this.getCachedPath(url);
-      if (existing) return existing;
+    // Check if already downloading - wait for existing download
+    if (this.downloadQueue.has(key)) {
+      const existingPath = await this.downloadQueue.get(key);
+      if (existingPath) {
+        onProgress?.(1);
+        return { url: existingPath, isLocal: true };
+      }
     }
 
     try {
-      console.log(`⬇️ Downloading: ${url.substring(0, 50)}...`);
-      
-      const downloadResult = await FileSystem.downloadAsync(url, localPath);
-      
-      if (downloadResult.status === 200) {
-        // Get file size
-        const fileInfo = await FileSystem.getInfoAsync(localPath);
-        
-        // Save to cache index
-        this.cacheIndex[key] = {
-          remoteUrl: url,
-          localPath: localPath,
-          downloadedAt: Date.now(),
-          fileSize: fileInfo.exists ? (fileInfo as any).size : undefined,
-        };
-        await this.saveCacheIndex();
-        
-        console.log(`✅ Cached: ${key}`);
-        return localPath;
-      } else {
-        console.error(`Download failed with status ${downloadResult.status}`);
+      console.log(`⬇️ Downloading: ${remoteUrl.substring(0, 80)}...`);
+
+      const downloadResumable = FileSystem.createDownloadResumable(
+        remoteUrl,
+        localPath,
+        {},
+        (downloadProgress) => {
+          if (downloadProgress.totalBytesExpectedToWrite > 0) {
+            const progress = downloadProgress.totalBytesWritten / downloadProgress.totalBytesExpectedToWrite;
+            onProgress?.(progress);
+          }
+        }
+      );
+
+      const downloadPromise = downloadResumable.downloadAsync().then(async (result) => {
+        if (result && result.status === 200) {
+          const fileInfo = await FileSystem.getInfoAsync(localPath);
+          this.cacheIndex[key] = {
+            remoteUrl: remoteUrl,
+            localPath: localPath,
+            downloadedAt: Date.now(),
+            fileSize: fileInfo.exists ? (fileInfo as any).size : undefined,
+          };
+          await this.saveCacheIndex();
+          console.log(`✅ Cached: ${key}`);
+          return localPath;
+        }
         return null;
+      });
+
+      this.downloadQueue.set(key, downloadPromise);
+      const resultPath = await downloadPromise;
+      this.downloadQueue.delete(key);
+
+      if (resultPath) {
+        onProgress?.(1);
+        return { url: resultPath, isLocal: true };
+      } else {
+        throw new Error('Download failed - no result path');
       }
     } catch (error) {
       console.error('Error downloading file:', error);
+      this.downloadQueue.delete(key);
       // Clean up partial download
       try {
         await FileSystem.deleteAsync(localPath, { idempotent: true });
       } catch {}
-      return null;
+      throw error;
     }
   }
 

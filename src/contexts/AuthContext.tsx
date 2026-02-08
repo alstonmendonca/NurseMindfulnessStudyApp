@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '../utils/supabase';
 import { storeAuth, getStoredAuth, clearStoredAuth } from '../utils/authStorage';
 import { appUsageTracker } from '../utils/appUsageTracker';
@@ -63,7 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [participantNumber, isInitializing]);
 
-  const login = async (number: string, password: string) => {
+  const login = useCallback(async (number: string, password: string) => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase
@@ -86,28 +86,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     // Stop usage tracking but don't wait for session sync to complete
     appUsageTracker.stopTrackingFast(); // Use non-blocking version
     
     setParticipantNumber(null);
     setIsLoading(false);
     await clearStoredAuth();
-  };
+  }, []);
+
+  const contextValue = useMemo(() => ({
+    participantNumber,
+    login,
+    logout,
+    isAuthenticated: !!participantNumber,
+    isLoading,
+    isInitializing,
+  }), [participantNumber, login, logout, isLoading, isInitializing]);
 
   return (
-    <AuthContext.Provider
-      value={{
-        participantNumber,
-        login,
-        logout,
-        isAuthenticated: !!participantNumber,
-        isLoading,
-        isInitializing,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

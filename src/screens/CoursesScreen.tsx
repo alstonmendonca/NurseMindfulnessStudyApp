@@ -118,9 +118,28 @@ export const CoursesScreen: React.FC<Props> = ({ navigation }) => {
                   </View>
                   <Text style={styles.courseTitle} numberOfLines={2}>{item.title}</Text>
                   <Text style={styles.courseDescription} numberOfLines={2}>{item.description}</Text>
-                  <Text style={styles.courseDuration}>
-                    <Ionicons name="time-outline" size={12} color="#64748b" /> {item.duration}
-                  </Text>
+                  <View style={styles.courseFooter}>
+                    <Text style={styles.courseDuration}>
+                      <Ionicons name="time-outline" size={12} color="#64748b" /> {item.duration}
+                    </Text>
+                    <View style={styles.courseProgressContainer}>
+                      <View style={styles.courseProgressBar}>
+                        <View 
+                          style={[
+                            styles.courseProgressFill, 
+                            { width: isCompleted ? '100%' : '0%' },
+                            isCompleted && styles.courseProgressFillComplete
+                          ]} 
+                        />
+                      </View>
+                      <Text style={[
+                        styles.courseProgressText,
+                        isCompleted && styles.courseProgressTextComplete
+                      ]}>
+                        {isCompleted ? '100%' : 'Not started'}
+                      </Text>
+                    </View>
+                  </View>
                 </View>
               </TouchableOpacity>
             );
@@ -292,5 +311,39 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#64748b',
     fontFamily: theme.typography.fontFamily.regular,
+  },
+  courseFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  courseProgressContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  courseProgressBar: {
+    width: 60,
+    height: 4,
+    backgroundColor: 'rgba(148, 163, 184, 0.2)',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  courseProgressFill: {
+    height: '100%',
+    backgroundColor: '#94a3b8',
+    borderRadius: 2,
+  },
+  courseProgressFillComplete: {
+    backgroundColor: '#10b981',
+  },
+  courseProgressText: {
+    fontSize: 11,
+    color: '#64748b',
+    fontFamily: theme.typography.fontFamily.regular,
+  },
+  courseProgressTextComplete: {
+    color: '#10b981',
+    fontWeight: '600',
   },
 });

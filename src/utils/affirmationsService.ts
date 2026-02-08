@@ -60,6 +60,9 @@ const AFFIRMATIONS: Affirmation[] = [
   { quote: "What lies behind us and what lies before us are tiny matters compared to what lies within us.", author: "Ralph Waldo Emerson" },
   { quote: "You are never too small to make a difference.", author: "Greta Thunberg" },
   { quote: "The harder you work for something, the greater you'll feel when you achieve it.", author: "Anonymous" },
+  { quote: "The best use of creativity is imagination. The worst use of creativity is anxiety.", author: "Deepak Chopra" },
+  { quote: "Instead of worrying about what you cannot control, shift your energy to what you can create.", author: "Roy T. Bennett" },
+  { quote: "Almost everything will work again if you unplug it for a few minutes, including you.", author: "Anne Lamott" },
 ];
 
 export class AffirmationsService {

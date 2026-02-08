@@ -270,6 +270,127 @@ export const coursesContent: Course[] = [
       },
     ],
   },
+  {
+    id: 'course-9',
+    title: 'Butterfly Hug for Stress & Anxiety',
+    description: 'Learn the Butterfly Hug technique — a bilateral stimulation method for calming your nervous system',
+    duration: '3 min read',
+    category: 'Stress Management',
+    thumbnail: 'https://images.unsplash.com/photo-1544027993-37dbfe43562a?w=400',
+    lessons: [
+      {
+        title: 'The Butterfly Hug Technique',
+        content: [
+          'Research has found that bilateral stimulation, such as the Butterfly Hug, can play a significant role in promoting emotional regulation and calming the nervous system.',
+          'The Butterfly Hug was originally developed as part of EMDR (Eye Movement Desensitization and Reprocessing) therapy and has since become a widely used self-soothing technique.',
+          'It works by gently stimulating both sides of the body in an alternating rhythm, which activates both hemispheres of the brain and helps process stress and anxiety.',
+          'This technique can be used anywhere — during a break, before a difficult conversation, or whenever you feel overwhelmed.',
+        ],
+        exercise: {
+          title: 'Butterfly Hug Practice',
+          instructions: [
+            'Gently cross your arms over your chest, as if giving yourself a soft hug.',
+            'Rest your hands just below your collarbones, with your fingertips lightly touching the tops of your shoulders or upper arms.',
+            'Begin to tap rhythmically, alternating left and right hands, like the gentle flapping of butterfly wings.',
+            'Tap at a slow, comfortable pace — about one tap per second on each side.',
+            'Close your eyes and focus on your breathing while you continue tapping.',
+            'Continue for 1–2 minutes, or until you feel a sense of calm.',
+            'This technique can be used discreetly during a shift or openly during a break.',
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: 'course-10',
+    title: 'Staying Present During Your Shift',
+    description: 'Cultivate awareness and focus to reduce mental clutter while on duty',
+    duration: '3 min read',
+    category: 'Workplace Mindfulness',
+    thumbnail: 'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=400',
+    lessons: [
+      {
+        title: 'The Wandering Mind at Work',
+        content: [
+          'Studies show that our minds wander nearly 47% of the time — and for healthcare workers juggling multiple patients, that number can climb even higher during long shifts.',
+          'A wandering mind often drifts toward worries about upcoming tasks, replaying past mistakes, or anticipating worst-case scenarios. This mental noise drains energy and increases stress.',
+          'Mindfulness at work doesn\'t mean meditating in a corner. It means bringing your full attention to whatever you\'re doing right now — charting, talking with a patient, or washing your hands.',
+          'Even brief moments of present-moment awareness can interrupt the stress cycle, sharpen your clinical judgment, and help you connect more meaningfully with patients.',
+        ],
+        exercise: {
+          title: 'Quick Mindfulness',
+          instructions: [
+            'Scan your body for tension (e.g., shoulders, neck) and consciously relax those areas.',
+            'Drop your shoulders away from your ears. Unclench your jaw.',
+            'Take one slow, deep breath.',
+            'Name one positive patient moment mid-shift to shift perspective.',
+            'It could be a smile, a thank you, or a small improvement in someone\'s condition.',
+            'This takes less than 30 seconds and resets your mental state.',
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: 'course-11',
+    title: 'Nutrition & Energy for Long Shifts',
+    description: 'Simple strategies to fuel your body and sustain your energy through demanding hours',
+    duration: '3 min read',
+    category: 'Physical Wellness',
+    thumbnail: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400',
+    lessons: [
+      {
+        title: 'Fueling Your Body Under Pressure',
+        content: [
+          'When shifts run long and breaks are short, nutrition is often the first thing sacrificed. But what you eat — and when — directly impacts your mood, focus, and resilience.',
+          'Skipping meals causes blood sugar crashes that mimic anxiety symptoms: shakiness, irritability, brain fog, and difficulty concentrating. Your body interprets low fuel as a threat.',
+          'Caffeine can help in moderation, but relying on it as a meal replacement creates a cycle of energy spikes and crashes that leaves you more exhausted by shift\'s end.',
+          'Planning ahead with portable, nutrient-dense foods is one of the simplest and most effective wellness strategies for healthcare workers — yet it\'s often overlooked.',
+        ],
+        exercise: {
+          title: 'Hydration and Snacks',
+          instructions: [
+            'Sip water steadily throughout your shift — aim for small, consistent amounts rather than large gulps.',
+            'Eat a nutrient-dense snack like nuts, trail mix, or a banana during breaks to stabilize energy and mood.',
+            'Dehydration worsens irritability and fatigue, so keep a water bottle handy and visible as a reminder.',
+            'Set a mental cue: every time you wash your hands, take a sip of water.',
+            'Avoid sugary snacks that cause energy crashes — choose protein and healthy fats instead.',
+            'Even small, consistent fueling prevents the mood dips that make stressful shifts feel unbearable.',
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: 'course-12',
+    title: 'Tension Release at Your Station',
+    description: 'Quick physical techniques to release built-up stress without leaving your workspace',
+    duration: '3 min read',
+    category: 'Stress Management',
+    thumbnail: 'https://images.unsplash.com/photo-1552196563-55cd4e45efb3?w=400',
+    lessons: [
+      {
+        title: 'Your Body Keeps the Score',
+        content: [
+          'Stress doesn\'t just live in your mind — it accumulates in your muscles. After hours of standing, lifting, and staying alert, your body holds tension like a clenched fist.',
+          'Common tension hotspots for healthcare workers include the jaw, shoulders, lower back, and hands. You may not even notice how tight these areas become until pain sets in.',
+          'Physical micro-breaks — even 30 seconds — can interrupt the stress-tension cycle. They signal to your nervous system that you are safe, allowing muscles to release.',
+          'You don\'t need a yoga mat or a quiet room. The most effective tension-release techniques can be done standing at your station, between patients, or during a brief pause.',
+        ],
+        exercise: {
+          title: 'Micro Breaks and Grounding',
+          instructions: [
+            'Step away for 30–60 seconds to stretch your shoulders or press your feet firmly into the floor, grounding you in the present.',
+            'Tense and release muscles (jaw, fists, shoulders) to release built-up tension without leaving your station.',
+            'Clench your fists tightly for 5 seconds, then release and feel the contrast.',
+            'Roll your shoulders backward 5 times, then forward 5 times.',
+            'Press both feet flat into the floor and notice the sensation of being grounded.',
+            'These micro-movements take under a minute and prevent tension from compounding throughout your shift.',
+          ],
+        },
+      },
+    ],
+  },
 ];
 
 // Meditation Tracks - For Meditate screen (accessed from Home)
@@ -591,7 +712,7 @@ export const breathingVideos: MediaItem[] = [
     id: 'breath-5',
     title: 'Progressive Muscle Relaxation — Stress Reduction Guide',
     description: 'Progressive muscle relaxation for stress relief',
-    duration: '15 min',
+    duration: '2 min',
     category: 'Progressive Relaxation',
     thumbnail: 'https://images.unsplash.com/photo-1508672019048-805c876b67e2?w=400',
     url: 'https://drive.google.com/uc?export=view&id=1V9IuPajzrgBAs_uM_ImCIEp9cb8DhNXf',
@@ -601,7 +722,7 @@ export const breathingVideos: MediaItem[] = [
     id: 'breath-6',
     title: 'Progressive Muscle Relaxation for Anxiety Relief',
     description: 'Progressive relaxation technique to ease anxiety',
-    duration: '20 min',
+    duration: '2 min',
     category: 'Progressive Relaxation',
     thumbnail: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400',
     url: 'https://drive.google.com/uc?export=view&id=15_M-x1XNNDGRCaG2-w48ild9Yifhod80',

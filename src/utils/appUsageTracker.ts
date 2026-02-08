@@ -46,12 +46,28 @@ class AppUsageTracker {
   private currentAppState: AppStateStatus = 'active';
   private sessionTimeoutId: ReturnType<typeof setTimeout> | null = null;
   private backgroundTimeoutId: ReturnType<typeof setTimeout> | null = null;
-  private durationUpdateIntervalId: ReturnType<typeof setInterval> | null = null; // NEW
+  private durationUpdateIntervalId: ReturnType<typeof setInterval> | null = null;
   private isOnline: boolean = false;
   private networkListener: ((state: ConnectivityState) => void) | null = null;
   private isInitialized: boolean = false;
   private isInitializing: boolean = false;
   private isAudioPlaying: boolean = false;
+  private sessionMutex: Promise<void> = Promise.resolve(); // Mutex for session operations
+  private initPromise: Promise<void> | null = null; // Track initialization promise
+
+  // Mutex to serialize session start/end operations
+  private async withSessionLock<T>(fn: () => Promise<T>): Promise<T> {
+    let resolve: () => void;
+    const nextMutex = new Promise<void>(r => { resolve = r; });
+    const prevMutex = this.sessionMutex;
+    this.sessionMutex = nextMutex;
+    await prevMutex;
+    try {
+      return await fn();
+    } finally {
+      resolve!();
+    }
+  }
 
   // Initialize tracking for a participant
   async initializeTracking(participantNumber: number): Promise<void> {
@@ -61,11 +77,10 @@ class AppUsageTracker {
       return;
     }
 
-    // Prevent concurrent initialization
-    if (this.isInitializing) {
+    // Prevent concurrent initialization - wait for existing init to complete
+    if (this.isInitializing && this.initPromise) {
       console.log('⏳ Initialization already in progress, waiting...');
-      // Wait a bit and return
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await this.initPromise;
       return;
     }
 
@@ -83,7 +98,8 @@ class AppUsageTracker {
 
     this.isInitializing = true;
 
-    try {
+    this.initPromise = (async () => {
+      try {
       this.participantNumber = participantNumber;
       this.currentAppState = AppState.currentState;
       
@@ -123,22 +139,19 @@ class AppUsageTracker {
       this.isInitialized = false;
     } finally {
       this.isInitializing = false;
+      this.initPromise = null;
     }
+    })();
+
+    await this.initPromise;
   }
 
-  // Add handler for app termination/crash scenarios
+  // App termination is handled via AppState listener — process.on events
+  // do not exist in React Native, so this is intentionally a no-op.
   private addTerminationHandler(): void {
-    // Handle process termination (if available in React Native)
-    if (typeof process !== 'undefined' && process.on) {
-      const handleTermination = () => {
-        console.log('App terminating - ending session immediately');
-        this.endSessionFast();
-      };
-
-      process.on('exit', handleTermination);
-      process.on('SIGINT', handleTermination);
-      process.on('SIGTERM', handleTermination);
-    }
+    // No-op: React Native does not support Node.js process events.
+    // Session cleanup is handled by AppState 'background'/'inactive' transitions
+    // and the crash recovery mechanism via persistActiveSession().
   }
 
   // Handle online state change
@@ -645,7 +658,7 @@ class AppUsageTracker {
         console.log('Audio stopped in background - ending session immediately');
         this.stopDurationUpdateInterval();
         await this.clearPersistedSession();
-        await this.endSession();
+        await this.withSessionLock(() => this.endSession());
       }
       
       // If audio started playing in background, make sure session is persisted
@@ -673,6 +686,10 @@ class AppUsageTracker {
     this.sessionStartTime = null;
     this.clearSessionTimeout();
     this.clearBackgroundTimeout();
+    this.stopDurationUpdateInterval();
+
+    // Clear persisted session (fire and forget)
+    this.clearPersistedSession().catch(() => {});
 
     const sessionEndTime = new Date();
     const durationMs = sessionEndTime.getTime() - startTime.getTime();
@@ -733,7 +750,7 @@ class AppUsageTracker {
         // Stop duration updates and clear persisted session since we're ending properly
         this.stopDurationUpdateInterval();
         await this.clearPersistedSession();
-        await this.endSession();
+        await this.withSessionLock(() => this.endSession());
       }
     } 
     // App is becoming active from background/inactive
@@ -742,12 +759,12 @@ class AppUsageTracker {
       console.log('App becoming active - starting new session');
       // Clear any background timeout
       this.clearBackgroundTimeout();
-      // Small delay to ensure state is stable
-      setTimeout(async () => {
+      // Use mutex to ensure session start doesn't race with session end
+      await this.withSessionLock(async () => {
         if (this.currentAppState === 'active' && !this.currentSessionId) {
           await this.startSession();
         }
-      }, 100);
+      });
     }
   };
 

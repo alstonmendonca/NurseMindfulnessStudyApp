@@ -27,6 +27,7 @@ import { DailyActivitiesService, DailyActivity } from '../utils/dailyActivitiesS
 import { AffirmationsService, Affirmation } from '../utils/affirmationsService';
 import { BackgroundDoodles } from '../components/BackgroundDoodles';
 import { useFocusEffect } from '@react-navigation/native';
+import { WeeklySummaryService, WeeklySummary } from '../utils/weeklySummaryService';
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<TabParamList, 'Home'>,
@@ -42,6 +43,8 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     quote: "Just do it.", 
     author: "Nike" 
   });
+  const [showWeeklySummary, setShowWeeklySummary] = useState(false);
+  const [weeklySummary, setWeeklySummary] = useState<WeeklySummary | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -53,6 +56,17 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
       // Load today's affirmation
       const affirmation = await AffirmationsService.getTodaysAffirmation();
       setTodaysAffirmation(affirmation);
+
+      // Initialize and check weekly summary
+      await WeeklySummaryService.initializeIfNeeded();
+      if (participantNumber) {
+        const shouldShow = await WeeklySummaryService.shouldShowWeeklySummary();
+        if (shouldShow) {
+          const summary = await WeeklySummaryService.getWeeklySummary(participantNumber);
+          setWeeklySummary(summary);
+          setShowWeeklySummary(true);
+        }
+      }
     };
     init();
   }, [participantNumber]);
@@ -125,6 +139,30 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         },
       ]
     );
+  };
+
+  const SUGGESTED_ROUTINES = [
+    '🧘 5-min morning meditation',
+    '🫁 Box breathing before shift',
+    '📝 Gratitude journaling',
+    '💧 Hydration reminder',
+    '🦋 Butterfly hug for stress',
+    '🚶 Stretch break mid-shift',
+  ];
+
+  const handleAddSuggestion = async (text: string) => {
+    try {
+      const updatedActivities = await DailyActivitiesService.addActivity(text);
+      setActivities(updatedActivities);
+    } catch (error) {
+      console.error('Error adding suggested activity:', error);
+      Alert.alert('Error', 'Failed to add activity. Please try again.');
+    }
+  };
+
+  const handleDismissWeeklySummary = async () => {
+    setShowWeeklySummary(false);
+    await WeeklySummaryService.markAsShown();
   };
 
   return (
@@ -218,9 +256,24 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           ))}
 
           {activities.length === 0 && (
-            <Text style={styles.emptyText}>
-              No activities yet. Tap the + to add one!
-            </Text>
+            <View style={styles.suggestionsContainer}>
+              <Text style={styles.emptyText}>
+                Get started with a suggested routine:
+              </Text>
+              <View style={styles.suggestionsGrid}>
+                {SUGGESTED_ROUTINES.map((suggestion, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.suggestionChip}
+                    onPress={() => handleAddSuggestion(suggestion)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.suggestionText}>{suggestion}</Text>
+                    <Ionicons name="add-circle-outline" size={16} color="#3A2477" />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
           )}
         </View>
       </ScrollView>
@@ -272,6 +325,57 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
               </TouchableWithoutFeedback>
             </View>
           </TouchableWithoutFeedback>
+      </Modal>
+
+      {/* Weekly Summary Modal */}
+      <Modal
+        visible={showWeeklySummary}
+        transparent
+        animationType="fade"
+        onRequestClose={handleDismissWeeklySummary}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.weeklySummaryModal}>
+            <Text style={styles.weeklySummaryEmoji}>🎉</Text>
+            <Text style={styles.weeklySummaryTitle}>Your Week in Review</Text>
+            {weeklySummary && (
+              <>
+                <Text style={styles.weeklySummaryDateRange}>
+                  {weeklySummary.weekStartDate} – {weeklySummary.weekEndDate}
+                </Text>
+                <View style={styles.summaryStatsGrid}>
+                  <View style={styles.summaryStatItem}>
+                    <Text style={styles.summaryStatNumber}>{weeklySummary.sessionsThisWeek}</Text>
+                    <Text style={styles.summaryStatLabel}>Sessions</Text>
+                  </View>
+                  <View style={styles.summaryStatItem}>
+                    <Text style={styles.summaryStatNumber}>{weeklySummary.minutesThisWeek}m</Text>
+                    <Text style={styles.summaryStatLabel}>Mindful Minutes</Text>
+                  </View>
+                  <View style={styles.summaryStatItem}>
+                    <Text style={styles.summaryStatNumber}>{weeklySummary.coursesCompletedThisWeek}</Text>
+                    <Text style={styles.summaryStatLabel}>Courses Done</Text>
+                  </View>
+                  <View style={styles.summaryStatItem}>
+                    <Text style={styles.summaryStatNumber}>{weeklySummary.currentStreak}🔥</Text>
+                    <Text style={styles.summaryStatLabel}>Day Streak</Text>
+                  </View>
+                </View>
+                <Text style={styles.weeklySummaryMessage}>
+                  {weeklySummary.sessionsThisWeek > 0
+                    ? 'Great work this week! Every moment of mindfulness counts. Keep it up! 💪'
+                    : 'A new week, a fresh start. Even one minute of mindfulness makes a difference. 🌱'}
+                </Text>
+              </>
+            )}
+            <TouchableOpacity
+              style={styles.weeklySummaryButton}
+              onPress={handleDismissWeeklySummary}
+            >
+              <Text style={styles.weeklySummaryButtonText}>Continue</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
     </SafeAreaView>
   );
@@ -441,10 +545,35 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    color: '#6b7280',
+    color: '#9ca3af',
     textAlign: 'center',
     fontStyle: 'italic',
-    paddingVertical: 20,
+    paddingVertical: 12,
+  },
+  suggestionsContainer: {
+    paddingVertical: 8,
+  },
+  suggestionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 8,
+  },
+  suggestionChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(58, 36, 119, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(58, 36, 119, 0.3)',
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderStyle: 'dashed',
+  },
+  suggestionText: {
+    fontSize: 13,
+    color: '#E5E7EC',
   },
   modalOverlay: {
     flex: 1,
@@ -502,5 +631,76 @@ const styles = StyleSheet.create({
     color: '#E5E7EC',
     fontSize: 16,
     fontWeight: '600',
+  },
+  weeklySummaryModal: {
+    backgroundColor: '#101340',
+    borderRadius: 24,
+    padding: 28,
+    width: '90%',
+    maxWidth: 400,
+    alignItems: 'center',
+  },
+  weeklySummaryEmoji: {
+    fontSize: 48,
+    marginBottom: 8,
+  },
+  weeklySummaryTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#E5E7EC',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  weeklySummaryDateRange: {
+    fontSize: 13,
+    color: '#9ca3af',
+    marginBottom: 20,
+  },
+  summaryStatsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 12,
+    marginBottom: 20,
+    width: '100%',
+  },
+  summaryStatItem: {
+    width: '45%',
+    backgroundColor: 'rgba(58, 36, 119, 0.25)',
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+  },
+  summaryStatNumber: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#E5E7EC',
+  },
+  summaryStatLabel: {
+    fontSize: 12,
+    color: '#9ca3af',
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  weeklySummaryMessage: {
+    fontSize: 14,
+    color: '#E5E7EC',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 20,
+    paddingHorizontal: 8,
+  },
+  weeklySummaryButton: {
+    backgroundColor: '#3A2477',
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 40,
+    width: '100%',
+    alignItems: 'center',
+  },
+  weeklySummaryButtonText: {
+    color: '#E5E7EC',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });
